@@ -1,0 +1,67 @@
+{
+  // Visit https://aka.ms/tsconfig to read more about this file
+  "compilerOptions": {
+    // File Layout
+    // "rootDir": "./src",
+    // "outDir": "./dist",
+
+    // Environment Settings
+    // See also https://aka.ms/tsconfig/module
+
+    "lib": ["ES2024"],
+    "module": "ESNext",
+    "target": "ES2024",
+    "types": ["node"],
+    // For nodejs:
+    // "lib": ["esnext"],
+    // "types": ["node"],
+    // and npm install -D @types/node
+
+    "moduleResolution": "bundler",
+    "esModuleInterop": true,
+    "ignoreDeprecations": "6.0",
+    "baseUrl": ".",
+    "paths": {
+      "@modules/auths": ["src/modules/auths"],
+      "@modules/auths/*": ["src/modules/auths/*"],
+      "@modules/middwares": ["src/modules/middwares"],
+      "@modules/middwares/*": ["src/modules/middwares/*"],
+      "@modules/places": ["src/modules/places"],
+      "@modules/places/*": ["src/modules/places/*"],
+      "@modules/trips": ["src/modules/trips"],
+      "@modules/trips/*": ["src/modules/trips/*"],
+      "@modules/users": ["src/modules/users"],
+      "@modules/users/*": ["src/modules/users/*"],
+      "@shared/errors": ["src/shared/errors"],
+      "@shared/errors/*": ["src/shared/errors/*"],
+      "@shared/utils": ["src/shared/utils"],
+      "@shared/utils/*": ["src/shared/utils/*"]
+    },
+
+    // Other Outputs
+    "sourceMap": true,
+    "declaration": true,
+    "declarationMap": true,
+
+    // Stricter Typechecking Options
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+
+    // Style Options
+    // "noImplicitReturns": true,
+    // "noImplicitOverride": true,
+    // "noUnusedLocals": true,
+    // "noUnusedParameters": true,
+    // "noFallthroughCasesInSwitch": true,
+    // "noPropertyAccessFromIndexSignature": true,
+
+    // Recommended Options
+    "strict": true,
+    "jsx": "react-jsx",
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "noUncheckedSideEffectImports": true,
+    "moduleDetection": "force",
+    "skipLibCheck": true
+  }
+}
