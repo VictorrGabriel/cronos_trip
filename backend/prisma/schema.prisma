@@ -1,0 +1,95 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum ProgressStatus {
+  PLANNED
+  ONGOING
+  COMPLETED
+
+  @@map("progress_status")
+}
+
+model User {
+  id            BigInt         @id @default(autoincrement()) @map("user_id")
+  email         String         @unique
+  name          String
+  passwordHash  String         @map("password_hash")
+  createdAt     DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
+  trips         Trip[]
+  refreshTokens RefreshToken[]
+
+  @@map("users")
+}
+
+model Trip {
+  id          BigInt         @id @default(autoincrement()) @map("trip_id")
+  name        String
+  startDate   DateTime       @map("start_date") @db.Date()
+  endDate     DateTime       @map("end_date") @db.Date()
+  status      ProgressStatus @default(PLANNED)
+  budgetCents Int            @default(0) @map("budget_cents") 
+  createdAt   DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
+  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      BigInt         @map("user_id")
+  itinerary   Itinerary[]
+
+  @@unique([userId, name])
+  @@map("trips")
+}
+
+model Itinerary {
+  id                 BigInt         @id @default(autoincrement()) @map("itinerary_id")
+  dayDate            DateTime       @map("day_date") @db.Date()
+  dailyQuota         Int            @map("daily_quota") @default(0)
+  status             ProgressStatus @default(PLANNED)
+  totalEstimateCents Int            @default(0) @map("total_estimate_cents")
+  placeApiRef        String         @map("place_api_ref")
+  notes              String?
+  createdAt          DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
+  trip               Trip           @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  tripId             BigInt         @map("trip_id")
+  visitations        Visitation[]
+
+  @@map("itineraries")
+}
+
+model Visitation {
+  id              BigInt    @id @default(autoincrement()) @map("visitation_id")
+  priceCents     Int       @default(0) @map("price_cents")
+  visitOrder      Int?      @map("visit_order")
+  scheduleTime    String?   @map("schedule_time")
+  durationMinutes Int?      @map("estimate_stay_time")
+  isVisited       Boolean   @default(false) @map("is_visited")
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  itinerary       Itinerary @relation(fields: [itineraryId], references: [id], onDelete: Cascade)
+  itineraryId     BigInt    @map("itinerary_id")
+
+  @@unique([itineraryId, scheduleTime])
+  @@unique([itineraryId, visitOrder])
+  @@map("visitations")
+}
+
+model RefreshToken {
+  id         BigInt   @id @default(autoincrement()) @map("token_id")
+  tokenHash  String   @unique @map("token_hash")
+  revoked    Boolean  @default(false)
+  deviceInfo String?  @map("device_info")
+  ipAddress  String?  @map("ip_address")
+  expiresAt  DateTime @default(dbgenerated("NOW() + INTERVAL '7 DAYS'")) @map("expires_at") @db.Timestamptz(3)
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     BigInt   @map("user_id")
+
+  @@map("refresh_tokens")
+}
