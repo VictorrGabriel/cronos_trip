@@ -67,3 +67,6 @@ Thumbs.db
 
 # Misc
 *.local
+
+# Prisma generated artifacts
+/backend/generated/prisma
