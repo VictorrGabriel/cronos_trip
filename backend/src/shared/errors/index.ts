@@ -13,3 +13,8 @@ export { InvalidTokenError } from "./invalid.token.error";
 export { InvalidCredentialsError } from "./invalid.credentials.error";
 export { PasswordMismatchError } from "./password.mismatch.error";
 export { InvalidIdError } from "./invalid.id.error";
+export {TripCompletedError} from "./trip.completed.error"
+export {TripNotFoundError} from "./trip.not.found.error"
+export {InvalidTripDateError} from "./invalid.trip.date.error"
+export {InvalidTripStatusError} from "./invalid.trip.status.error";
+export {ConflictTripDate} from "./conflict.trip.date";

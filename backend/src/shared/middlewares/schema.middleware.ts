@@ -1,13 +1,14 @@
 import type { HttpRequest, HttpResponse } from "@shared/types";
 import type { NextFunction } from "express";
-import { type ZodSchema, ZodError } from "zod";
+import { type ZodObject, ZodError } from "zod";
 import { ValidationError } from "@shared/errors";
 
 export const validateSchema =
-  (schema: ZodSchema) =>
+  (schema: ZodObject) =>
    (req: HttpRequest, res: HttpResponse, next: NextFunction): void => {
     try {
-      schema.parse(req.body);
+      const validBody = schema.parse(req.body);
+      req.body = validBody;
       next();
     } catch (err) {
       if (err instanceof ZodError) {
