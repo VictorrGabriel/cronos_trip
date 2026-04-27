@@ -34,7 +34,6 @@ export const ControllerCreate =
   ) =>
   async (req: HttpRequest, res: HttpResponse): Promise<void> => {
     const userId = BigInt(req.params.userId as string);
-    console.log(req.body.startDate)
     const requestData = req.body as Omit<CreateTripDTO, "userId">;
     const trip = await createTrip(tripRepository, userRepository, {
       ...requestData,

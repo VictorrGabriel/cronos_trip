@@ -19,7 +19,7 @@ import { TripRepositoryImpl } from "./repository";
 import type { UserRepository } from "@modules/users/repository.contract";
 import { UserRepositoryImpl } from "@modules/users/repository";
 import {
-  validateIdParams,
+  validateIdParam,
   validateSchema,
   auth,
 } from "@shared/middlewares/index";
@@ -37,7 +37,7 @@ router.get(
 router.get(
   "/:id",
   auth,
-  validateIdParams,
+  validateIdParam(),
   ControllerFindById(tripRepository, useCaseFindById),
 );
 router.post(

@@ -18,3 +18,6 @@ export {TripNotFoundError} from "./trip.not.found.error"
 export {InvalidTripDateError} from "./invalid.trip.date.error"
 export {InvalidTripStatusError} from "./invalid.trip.status.error";
 export {ConflictTripDate} from "./conflict.trip.date";
+export {InvalidInputError} from "./invalid.input.error";
+export {DateOutOfRengeError} from "./date.out.of.range.error"
+export {ItineraryNotFoundError} from "./itinerary.not.found.error"

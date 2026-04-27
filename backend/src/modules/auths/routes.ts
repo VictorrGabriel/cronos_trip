@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { loginSchema, tokenSchema, updatePasswordSchema } from "./schemas";
-import { validateSchema, auth, validateIdParams } from "@shared/middlewares/index";
+import { validateSchema, auth } from "@shared/middlewares/index";
 import {
   usecaseLogout,
   usecaseLogin,

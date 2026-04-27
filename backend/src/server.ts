@@ -5,14 +5,16 @@ import { tripRouter } from "@modules/trips/routes";
 import { authRouter } from "@modules/auths/routes";
 import { globalErrorHandler } from "@shared/middlewares/index";
 import cookieParser from "cookie-parser";
+import { itineraryRouter } from "@modules/itineraries/routes";
 const API_PATH = "/api/v1";
 
 const app = express();
 app.use(cookieParser());
 app.use(express.json({ limit: "5kb" }));
+app.use(`${API_PATH}/auth`, authRouter);
 app.use(`${API_PATH}/users`, userRouter);
 app.use(`${API_PATH}/trips`, tripRouter);
-app.use(`${API_PATH}/auth`, authRouter);
+app.use(`${API_PATH}/itineraries`, itineraryRouter);
 app.use(globalErrorHandler);
 const PORT = process.env.PORT || 3000;
 
