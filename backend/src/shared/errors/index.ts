@@ -21,3 +21,5 @@ export {ConflictTripDate} from "./conflict.trip.date";
 export {InvalidInputError} from "./invalid.input.error";
 export {DateOutOfRengeError} from "./date.out.of.range.error"
 export {ItineraryNotFoundError} from "./itinerary.not.found.error"
+export {VisitationNotFoundError} from "./visitation.not.found.error"
+export {ConflictVisitationLimit} from "./visitation.limit.error"

@@ -1,7 +1,4 @@
 import { ProgressStatus } from "@prisma/client";
-import type { TripDates } from "@shared/types/trip.type";
-import type { CreateTripDTO } from "../dto";
-import type { TripRepository } from "@modules/trips/repository.contract";
 
 export const toTimezoneMidnight = (date: Date, timezone: string): Date => {
   const timezoneDate = new Date(

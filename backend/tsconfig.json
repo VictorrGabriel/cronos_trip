@@ -32,6 +32,8 @@
       "@modules/trips/*": ["src/modules/trips/*"],
       "@modules/users": ["src/modules/users"],
       "@modules/users/*": ["src/modules/users/*"],
+            "@modules/visitations": ["src/modules/visitations"],
+      "@modules/visitations/*": ["src/modules/visitations/*"],
       "@shared/errors": ["src/shared/errors"],
       "@shared/errors/*": ["src/shared/errors/*"],
       "@shared/repositories": ["src/shared/repositories"],
