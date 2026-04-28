@@ -6,6 +6,7 @@ import { authRouter } from "@modules/auths/routes";
 import { globalErrorHandler } from "@shared/middlewares/index";
 import cookieParser from "cookie-parser";
 import { itineraryRouter } from "@modules/itineraries/routes";
+import { visitationRouter } from "@modules/visitations/routes";
 const API_PATH = "/api/v1";
 
 const app = express();
@@ -15,6 +16,7 @@ app.use(`${API_PATH}/auth`, authRouter);
 app.use(`${API_PATH}/users`, userRouter);
 app.use(`${API_PATH}/trips`, tripRouter);
 app.use(`${API_PATH}/itineraries`, itineraryRouter);
+app.use(`${API_PATH}/visitations`, visitationRouter);
 app.use(globalErrorHandler);
 const PORT = process.env.PORT || 3000;
 
