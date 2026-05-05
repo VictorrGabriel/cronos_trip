@@ -1,9 +1,22 @@
 -- CreateEnum
-CREATE TYPE "progress_status" AS ENUM ('PLANNED', 'ONGOING', 'COMPLETED');
+CREATE TYPE "progress_status" AS ENUM ('PLANNED', 'ONGOING', 'COMPLETED', 'CANCELED');
+
+-- CreateTable
+CREATE TABLE "users" (
+    "user_id" BIGSERIAL NOT NULL,
+    "public_id" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "password_hash" TEXT NOT NULL,
+    "created_at" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "users_pkey" PRIMARY KEY ("user_id")
+);
 
 -- CreateTable
 CREATE TABLE "trips" (
     "trip_id" BIGSERIAL NOT NULL,
+    "public_id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "start_date" DATE NOT NULL,
     "end_date" DATE NOT NULL,
@@ -16,21 +29,11 @@ CREATE TABLE "trips" (
 );
 
 -- CreateTable
-CREATE TABLE "users" (
-    "user_id" BIGSERIAL NOT NULL,
-    "email" TEXT NOT NULL,
-    "name" TEXT NOT NULL,
-    "password_hash" TEXT NOT NULL,
-    "created_at" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT "users_pkey" PRIMARY KEY ("user_id")
-);
-
--- CreateTable
 CREATE TABLE "itineraries" (
     "itinerary_id" BIGSERIAL NOT NULL,
+    "public_id" TEXT NOT NULL,
     "day_date" DATE NOT NULL,
-    "daily_quota" INTEGER NOT NULL,
+    "daily_quota" INTEGER NOT NULL DEFAULT 0,
     "status" "progress_status" NOT NULL DEFAULT 'PLANNED',
     "total_estimate_cents" INTEGER NOT NULL DEFAULT 0,
     "place_api_ref" TEXT NOT NULL,
@@ -44,10 +47,11 @@ CREATE TABLE "itineraries" (
 -- CreateTable
 CREATE TABLE "visitations" (
     "visitation_id" BIGSERIAL NOT NULL,
+    "public_id" TEXT NOT NULL,
     "price_cents" INTEGER NOT NULL DEFAULT 0,
     "visit_order" INTEGER,
     "schedule_time" TEXT,
-    "estimate_stay_time" INTEGER,
+    "duration_minutes" INTEGER,
     "is_visited" BOOLEAN NOT NULL DEFAULT false,
     "created_at" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "itinerary_id" BIGINT NOT NULL,
@@ -70,10 +74,25 @@ CREATE TABLE "refresh_tokens" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "trips_user_id_name_key" ON "trips"("user_id", "name");
+CREATE UNIQUE INDEX "users_public_id_key" ON "users"("public_id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "trips_public_id_key" ON "trips"("public_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "trips_user_id_name_key" ON "trips"("user_id", "name");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "itineraries_public_id_key" ON "itineraries"("public_id");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "itineraries_trip_id_day_date_key" ON "itineraries"("trip_id", "day_date");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "visitations_public_id_key" ON "visitations"("public_id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "visitations_itinerary_id_schedule_time_key" ON "visitations"("itinerary_id", "schedule_time");
