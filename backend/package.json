@@ -5,7 +5,9 @@
   "main": "src/server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "tsx --watch src/server.ts"
+    "dev": "tsx --watch src/server.ts",
+    "migrate:reset": "npx prisma migrate reset",
+    "migrate:dev": "npx prisma migrate dev"
   },
   "keywords": [],
   "author": "",
