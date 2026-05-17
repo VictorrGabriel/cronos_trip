@@ -21,7 +21,7 @@ export const controllerCreate =
     visitationCreate: UsecaseCreate,
   ) =>
   async (req: HttpRequest, res: HttpResponse): Promise<void> => {
-    const itineraryId = BigInt(req.params.itineraryId as string);
+    const itineraryId = req.params.itineraryId as string;
     const data: VisitationCreateDTO = {
       ...(req.body as VisitationCreateInput),
       itineraryId,
@@ -42,7 +42,7 @@ export const controllerUpdate =
     visitationUpdade: UsecaseUpdate,
   ) =>
   async (req: HttpRequest, res: HttpResponse): Promise<void> => {
-    const visitationId = BigInt(req.params.id as string);
+    const visitationId = req.params.id as string;
     const data = req.body as VisitationUpdateDTO
     await visitationUpdade(
       visitationRepository,
@@ -51,29 +51,32 @@ export const controllerUpdate =
       data,
     );
 
-    res.status(201).json({ messafe: "Visitation updated successfully" });
+    res.status(201).json({ message: "Visitation updated successfully" });
   };
 
 export const controllerFindById =
    (
     visitationRepository: VisitationRepository,
+    itineraryRepository: ItineraryRepository,
     visitationFindById: UsecaseFindById,
   ) =>
   async (req: HttpRequest, res: HttpResponse): Promise<void> => {
-    const id = BigInt(req.params.id as string);
-    const visitation = await visitationFindById(visitationRepository, id);
+    const id = req.params.id as string;
+    const visitation = await visitationFindById(visitationRepository, itineraryRepository, id);
     res.status(200).json(visitation);
   };
 
 export const controllerFindAllByItineraryId =
 (
     visitationRepository: VisitationRepository,
+    itineraryRepository: ItineraryRepository,
     visitationFindAllByItineraryId: UsecaseFindAllByItineraryId,
   ) =>
   async (req: HttpRequest, res: HttpResponse): Promise<void> => {
-    const itineraryId = BigInt(req.params.itineraryId as string);
+    const itineraryId = req.params.itineraryId as string;
     const visitations = await visitationFindAllByItineraryId(
       visitationRepository,
+      itineraryRepository,
       itineraryId,
     );
     res.status(200).json(visitations);
@@ -85,7 +88,7 @@ export const controllerDelete =
     visitationDelete: UsecaseDelete,
   ) =>
   async (req: HttpRequest, res: HttpResponse): Promise<void> => {
-    const id = BigInt(req.params.id as string);
+    const id = req.params.id as string;
     await visitationDelete(visitationRepository, id);
     res.status(201).json({ message: "Visitation deleted successfully" });
   };

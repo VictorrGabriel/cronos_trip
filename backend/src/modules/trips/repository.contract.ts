@@ -6,5 +6,11 @@ export interface TripRepository extends BaseRepository<Trip> {
   create(data: Prisma.TripCreateInput): Promise<Trip>;
   update(id: bigint, data: Prisma.TripUpdateInput): Promise<Trip>;
   findByUserId(userId: bigint): Promise<Trip[]>;
-  findConflictDate(userId: bigint, startDate: Date, endDate: Date): Promise<TripDates[]>;
+  findByUserPublicId(userId: string): Promise<Trip[]>;
+  findConflictDate(
+    userId: bigint,
+    startDate: Date,
+    endDate: Date,
+    excludeId?: bigint,
+  ): Promise<TripDates[]>;
 }

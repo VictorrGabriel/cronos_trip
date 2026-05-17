@@ -9,4 +9,5 @@ export interface VisitationRepository extends BaseRepository<Visitation> {
   minutesSum(itineraryId: bigint): Promise<number | null>;
   findVisitationTotalByItineraryId(itineraryId: bigint): Promise<number>;
   findByItineraryId(itineraryId: bigint): Promise<Visitation[]>
+  findByItineraryPublicId(itineraryId: string): Promise<Visitation[]>
 }

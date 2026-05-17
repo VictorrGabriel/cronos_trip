@@ -11,7 +11,7 @@
     "lib": ["ES2024"],
     "module": "ESNext",
     "target": "ES2024",
-    "types": ["node"],
+    "types": ["jest", "node"],
     // For nodejs:
     // "lib": ["esnext"],
     // "types": ["node"],
@@ -22,30 +22,10 @@
     "ignoreDeprecations": "6.0",
     "baseUrl": ".",
     "paths": {
-      "@lib/": ["lib"],
+      "@/*": ["src/*"],
       "@lib/*": ["lib/*"],
-      "@modules/auths": ["src/modules/auths"],
-      "@modules/auths/*": ["src/modules/auths/*"],
-      "@modules/itineraries": ["src/modules/itineraries"],
-      "@modules/itineraries/*": ["src/modules/itineraries/*"],
-      "@modules/trips": ["src/modules/trips"],
-      "@modules/trips/*": ["src/modules/trips/*"],
-      "@modules/users": ["src/modules/users"],
-      "@modules/users/*": ["src/modules/users/*"],
-            "@modules/visitations": ["src/modules/visitations"],
-      "@modules/visitations/*": ["src/modules/visitations/*"],
-      "@shared/errors": ["src/shared/errors"],
-      "@shared/errors/*": ["src/shared/errors/*"],
-      "@shared/repositories": ["src/shared/repositories"],
-      "@shared/repositories/*": ["src/shared/repositories/*"],
-      "@shared/utils": ["src/shared/utils"],
-      "@shared/utils/*": ["src/shared/utils/*"],
-      "@shared/types": ["src/shared/types"],
-      "@shared/types/*": ["src/shared/types/*"],
-      "@shared/dto/": ["src/shared/dto/"],
-      "@shared/dto/*": ["src/shared/dto/*"],
-      "@shared/middlewares/": ["src/shared/middlewares/"],
-      "@shared/middlewares/*": ["src/shared/middlewares/*"]
+      "@modules/*": ["src/modules/*"],
+      "@shared/*": ["src/shared/*"]
     },
 
     // Other Outputs
@@ -69,9 +49,12 @@
     "strict": true,
     "jsx": "react-jsx",
     "verbatimModuleSyntax": true,
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
     "isolatedModules": true,
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
     "skipLibCheck": true
   }
+  // "include": ["src/**/*", "tests/**/*"]
 }

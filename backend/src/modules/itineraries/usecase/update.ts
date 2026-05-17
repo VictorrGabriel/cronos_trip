@@ -21,7 +21,7 @@ export interface UsecaseUpdate {
   (
     itinerariesRepository: ItineraryRepository,
     tripRepository: TripRepository,
-    itineraryId: bigint,
+    itineraryId: string,
     data: ItineraryUpdateDTO,
   ): Promise<void>;
 }
@@ -32,7 +32,7 @@ export const usecaseUpdate: UsecaseUpdate = async (
   itineraryId,
   data,
 ) => {
-  const itinerary = await itinerariesRepository.findById(itineraryId);
+  const itinerary = await itinerariesRepository.findByPublicId(itineraryId);
 
   if (!itinerary) {
     throw new ItineraryNotFoundError();
@@ -46,7 +46,7 @@ export const usecaseUpdate: UsecaseUpdate = async (
 
   if (data.dayDate) {
     const isFree = await itinerariesRepository.isFreeDay(
-      itineraryId,
+      itinerary.id,
       data.dayDate,
     );
 
@@ -104,8 +104,8 @@ export const usecaseUpdate: UsecaseUpdate = async (
 
   const itineraryEntity: Prisma.ItineraryUpdateInput = {
     ...baseCreateItinerary,
-    trip: { connect: { id: data.tripId } },
+    trip: { connect: { id: trip.id } },
   };
 
-  await itinerariesRepository.update(itineraryId, itineraryEntity);
+  await itinerariesRepository.update(itinerary.id, itineraryEntity);
 };

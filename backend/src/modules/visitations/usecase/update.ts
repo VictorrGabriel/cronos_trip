@@ -16,7 +16,7 @@ export interface UsecaseUpdate {
   (
     visitationRepository: VisitationRepository,
     itineraryRepository: ItineraryRepository,
-    visitationId: bigint,
+    visitationId: string,
     data: VisitationUpdateDTO,
   ): Promise<void>;
 }
@@ -63,10 +63,10 @@ export const usecaseUpdate: UsecaseUpdate = async (
   if (
     minutesSum &&
     data.durationMinutes &&
-    hasMinuteLeft(minutesSum, data.durationMinutes)
+    !hasMinuteLeft(minutesSum, data.durationMinutes)
   ) {
     throw new InvalidInputError({
-      message: `This day left only ${minutesSum - dayMinutes} remaining minutes`,
+      message: `This day left only ${dayMinutes - minutesSum} remaining minutes`,
     });
   }
 
@@ -80,18 +80,5 @@ export const usecaseUpdate: UsecaseUpdate = async (
 
   const visitationEntity: Prisma.VisitationUpdateInput = baseUpdate;
 
-  await visitationRepository.update(visitationId, visitationEntity);
+  await visitationRepository.update(currentVisitation.id, visitationEntity);
 };
-
-/* 
-
-type VisitationUpdateDTO = {
-    priceCents?: number | undefined;
-    visitOrder?: number | null | undefined;
-    scheduleTime?: string | null | undefined;
-    durationMinutes?: number | null | undefined;
-    isVisited?: boolean | undefined;
-} & {
-    itineraryId: bigint;
-}
-*/

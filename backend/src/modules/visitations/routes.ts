@@ -35,6 +35,7 @@ router.patch(
   "/:id",
   auth,
   validateIdParam(),
+  validateSchema(visitationUpdateSchema),
   controllerUpdate(visitationRepository, itineraryRepository, usecaseUpdate),
 );
 
@@ -44,6 +45,7 @@ router.get(
   validateIdParam("itineraryId"),
   controllerFindAllByItineraryId(
     visitationRepository,
+    itineraryRepository,
     usecaseFindAllByItineraryId,
   ),
 );
@@ -52,7 +54,11 @@ router.get(
   "/:id",
   auth,
   validateIdParam(),
-  controllerFindById(visitationRepository, usecaseFindById),
+  controllerFindById(
+    visitationRepository,
+    itineraryRepository,
+    usecaseFindById,
+  ),
 );
 
 router.delete(

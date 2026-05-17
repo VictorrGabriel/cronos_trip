@@ -1,12 +1,12 @@
 ﻿import type { UserRepository } from "../repository.contract";
 
 export interface UsecaseDelete {
-  (userRepository: UserRepository, id: bigint): Promise<void>;
+  (userRepository: UserRepository, id: string): Promise<void>;
 }
 
 export const usecaseDelete:UsecaseDelete = async (
   userRepository: UserRepository,
-  id: bigint,
+  publicId: string,
 )=> {
-  await userRepository.delete(id);
+  await userRepository.deleteByPublicId(publicId);
 };

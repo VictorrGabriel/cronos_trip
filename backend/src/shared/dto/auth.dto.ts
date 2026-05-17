@@ -12,9 +12,11 @@ export type LoginAuthDTO = AuthLoginInput & {
 
 export type UpdatePasswordAuthDTO = AuthUpdatePasswordInput;
 
-export type TokenAuthDTO = AuthTokenInput;
+export type LogoutAuthDTO = Pick<RefreshToken, "deviceInfo" >;
 
 export type ResponseAuthDTO = Pick<
   RefreshToken,
   "expiresAt" | "createdAt"
-> & { token: string; accessToken: string; jti: string };
+> & { token: string; accessToken: string };
+
+export type RefreshAuthDTO = Pick<RefreshToken, "deviceInfo" > & {refreshToken: string | undefined};

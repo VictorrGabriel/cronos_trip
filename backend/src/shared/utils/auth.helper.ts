@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 import { AppError, InvalidTokenError } from "@shared/errors";
 
-interface MyTokenPayload {
+type TokenPayload = {
   userId: string;
   iat: number;
   exp: number;
@@ -23,7 +23,7 @@ export const verifyRefreshToken = (token: string) => {
     throw new AppError({ message: "Invalid refresh key" });
   }
 
-  const decoded = jwt.verify(token, refreshKey) as MyTokenPayload;
+  const decoded = jwt.verify(token, refreshKey) as TokenPayload;
   return decoded.userId;
 };
 
@@ -44,6 +44,6 @@ export const verifyAccessToken = (token: string) => {
     throw new AppError({ message: "Invalid access key" });
   }
 
-  const decoded = jwt.verify(token, accessKey) as MyTokenPayload;
+  const decoded = jwt.verify(token, accessKey) as TokenPayload;
   return decoded.userId;
 };

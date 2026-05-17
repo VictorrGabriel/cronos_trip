@@ -1,29 +1,32 @@
 import type { ResponseTripDTO } from "@shared/dto/trip.dto";
 import type { TripRepository } from "../repository.contract";
-import { pickByKeys } from "@shared/utils";
-import { TripNotFoundError } from "@shared/errors";
+import { pickByKeys, buildTripResponseDTO } from "@shared/utils";
+import { TripNotFoundError, UserNotFoundError } from "@shared/errors";
+import type { UserRepository } from "@modules/users/repository.contract";
 
-export interface UseCaseFindById {
-  (tripRepository: TripRepository, id: bigint): Promise<ResponseTripDTO>;
+export interface UsecaseFindById {
+  (
+    tripRepository: TripRepository,
+    userRepository: UserRepository,
+    id: string,
+  ): Promise<ResponseTripDTO>;
 }
 
-export const useCaseFindById: UseCaseFindById = async (
-  tripRepository: TripRepository,
-  id: bigint,
+export const usecaseFindById: UsecaseFindById = async (
+  tripRepository,
+  userRepository,
+  id,
 ) => {
-  const trip = await tripRepository.findById(id);
-  if (trip === null) {
+  const trip = await tripRepository.findByPublicId(id);
+  if (!trip) {
     throw new TripNotFoundError();
   }
 
-  const responseTrip: ResponseTripDTO = pickByKeys({...trip, id: String(trip.id)}, [
-    "id",
-    "name",
-    "startDate",
-    "endDate",
-    "status",
-    "budgetCents",
-    "createdAt",
-  ]);
+  const userPublicId = await userRepository.findPublicId(trip.userId);
+  if (!userPublicId) {
+    throw new UserNotFoundError();
+  }
+
+  const responseTrip: ResponseTripDTO = buildTripResponseDTO(trip, userPublicId);
   return responseTrip;
 };

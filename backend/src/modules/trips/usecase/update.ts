@@ -14,11 +14,11 @@ import {
   ConflictTripDate,
 } from "@shared/errors";
 
-export interface UseCaseUpdate {
+export interface UsecaseUpdate {
   (
     tripRepository: TripRepository,
     data: UpdateTripDTO,
-    id: bigint,
+    id: string,
   ): Promise<void>;
 }
 
@@ -42,17 +42,17 @@ const shouldThrowInvalidDateRange = (
   return false;
 };
 
-export const useCaseUpdate: UseCaseUpdate = async (
+export const usecaseUpdate: UsecaseUpdate = async (
   tripRepository: TripRepository,
   data: UpdateTripDTO,
-  id: bigint,
+  id: string,
 ) => {
-  const currentTrip = await tripRepository.findById(id);
+  const currentTrip = await tripRepository.findByPublicId(id);
   if (!currentTrip) {
     throw new TripNotFoundError();
   }
 
-  if (currentTrip.status === "COMPLETED") {
+  if (currentTrip.status === "COMPLETED" || currentTrip.status === "CANCELED") {
     throw new TripCompletedError();
   }
 
@@ -61,6 +61,7 @@ export const useCaseUpdate: UseCaseUpdate = async (
       currentTrip.userId,
       data.startDate || currentTrip.startDate,
       data.endDate || currentTrip.endDate,
+      currentTrip.id,
     );
 
     if (conflictDates.length > 0) {
@@ -134,5 +135,5 @@ export const useCaseUpdate: UseCaseUpdate = async (
     updateSource,
     allowedKeys,
   );
-  await tripRepository.update(id, tripEntity);
+  await tripRepository.update(currentTrip.id, tripEntity);
 };

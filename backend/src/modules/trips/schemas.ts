@@ -1,9 +1,11 @@
 import * as z from "zod";
+import { capitalizeFirstLetter } from "@/shared/utils";
 
 const tripNameSchema = z
-  .string({ error: "Name must be a string" })
+  .string({ error: "Name must be a non-empty string" })
   .min(3, "Name must have at least 3 characters")
-  .max(20, "Trip name must have at most 20 characters");
+  .max(20, "Trip name must have at most 20 characters")
+  .transform((input) => capitalizeFirstLetter(input));
 
 
 const buildTripDateSchema = (fieldName: string) =>

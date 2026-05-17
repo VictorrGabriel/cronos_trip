@@ -1,12 +1,17 @@
-import { verifyRefreshToken } from "@shared/utils/auth.helper";
+import type { UserRepository } from "@/modules/users/repository.contract";
 import type { AuthRepository } from "../repository.contract";
-import type { TokenAuthDTO } from "@shared/dto/auth.dto";
-import { tokenSchema } from "../schemas";
+import type { LogoutAuthDTO } from "@shared/dto/auth.dto";
+import { UserNotFoundError } from "@/shared/errors";
 
 export interface UsecaseLogout{
-    (authRepository: AuthRepository, data: TokenAuthDTO): Promise<void>
+    (authRepository: AuthRepository, userRepository: UserRepository, userId: string, data: LogoutAuthDTO): Promise<void>
 }
 
-export const usecaseLogout: UsecaseLogout = async (authRepository, data) => {
-    await authRepository.revokedById(data.jti);
+export const usecaseLogout: UsecaseLogout = async (authRepository, userRepository, userId, data) => {
+    
+    const user = await userRepository.findByPublicId(userId);
+    if(!user){
+        throw new UserNotFoundError();
+    }
+    await authRepository.revolkedByDevice(user.id, data.deviceInfo);
 };

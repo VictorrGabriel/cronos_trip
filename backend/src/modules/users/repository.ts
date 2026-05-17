@@ -15,7 +15,17 @@ export class UserRepositoryImpl
     return await this.model.create({ data });
   }
 
-  async update(id: bigint, data: Prisma.UserUpdateInput): Promise<User> {
+  async updateByPublicId(
+    id: string,
+    data: Prisma.UserUpdateInput,
+  ): Promise<User> {
+    return await this.model.update({ data, where: { publicId: id } });
+  }
+
+   async update(
+    id: bigint,
+    data: Prisma.UserUpdateInput,
+  ): Promise<User> {
     return await this.model.update({ data, where: { id } });
   }
 
@@ -41,5 +51,12 @@ export class UserRepositoryImpl
 
   async findByEmail(email: string): Promise<User | null> {
     return await this.model.findUnique({ where: { email } });
+  }
+
+  async findPublicId(id: bigint): Promise<string | null> {
+    return (await this.model.findUnique({
+      select: { publicId: true },
+      where: { id },
+    }))?.publicId ?? null;
   }
 }

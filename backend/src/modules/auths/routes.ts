@@ -1,6 +1,10 @@
 import { Router } from "express";
 import { loginSchema, tokenSchema, updatePasswordSchema } from "./schemas";
-import { validateSchema, auth } from "@shared/middlewares/index";
+import {
+  validateSchema,
+  auth,
+  validateIdParam,
+} from "@shared/middlewares/index";
 import {
   usecaseLogout,
   usecaseLogin,
@@ -23,7 +27,12 @@ const router = Router();
 const authRepository: AuthRepository = new AuthRepositoryImpl(prisma);
 const userRepository: UserRepository = new UserRepositoryImpl(prisma);
 
-router.post("/logout", auth, validateSchema(tokenSchema), controllerLogout(authRepository, usecaseLogout));
+router.delete(
+  "/logout/:userId",
+  auth,
+  validateIdParam("userId"),
+  controllerLogout(authRepository, userRepository, usecaseLogout),
+);
 
 router.post(
   "/login",
@@ -31,14 +40,16 @@ router.post(
   controllerLogin(authRepository, userRepository, usecaseLogin),
 );
 router.patch(
-  "/user/password",
+  "/user/password/:userId",
   auth,
+  validateIdParam("userId"),
   validateSchema(updatePasswordSchema),
   controllerUpdatePassword(userRepository, usecaseUpdatePassword),
 );
-router.post(
-  "/refresh", validateSchema(tokenSchema), 
-  controllerRefresh(authRepository, usecaseRefresh),
+router.get(
+  "/refresh/:userId",
+  validateIdParam("userId"),
+  controllerRefresh(authRepository, userRepository, usecaseRefresh),
 );
 
 export { router as authRouter };

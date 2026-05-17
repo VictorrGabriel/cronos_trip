@@ -1,7 +1,6 @@
 import type { ResponseAuthDTO, LoginAuthDTO } from "@shared/dto/auth.dto";
 import type { AuthRepository } from "../repository.contract";
 import type { UserRepository } from "@modules/users/repository.contract";
-import { loginSchema } from "../schemas";
 import argon2 from "argon2";
 import { pickByKeys } from "@shared/utils";
 import type { Prisma } from "@prisma/client";
@@ -44,10 +43,12 @@ export const usecaseLogin: UsecaseLogin = async (
 
   const isValidPassword = await argon2.verify(passwordHash, data.password);
 
+  
   if (!isValidPassword) {
     throw new InvalidCredentialsError();
   }
-
+  
+ // console.log(`email: ${data.email}, password: ${data.password}, validPassword: ${isValidPassword}`);
   const token = generateRefreshToken(String(user.id));
   const tokenHash = await argon2.hash(token);
 
@@ -63,8 +64,8 @@ export const usecaseLogin: UsecaseLogin = async (
   const accessToken = generateAccessToken(String(user.id));
 
   const authResponse: ResponseAuthDTO = pickByKeys(
-    { ...refreshToken, token, accessToken, jti: String(refreshToken.id) },
-    ["token", "accessToken", "expiresAt", "createdAt", "jti"],
+    { ...refreshToken, token, accessToken },
+    ["token", "accessToken", "expiresAt", "createdAt"],
   );
 
   return authResponse;

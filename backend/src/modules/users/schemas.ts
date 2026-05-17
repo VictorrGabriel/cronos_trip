@@ -1,9 +1,11 @@
 import * as z from "zod";
+import { capitalizeFirstLetter } from "@/shared/utils";
 
 const userNameSchema = z
   .string({ error: "User name must be a non-empty string" })
   .min(3, { error: "User name must have at least 3 characters" })
-  .max(20, "User name must have less than 20 characters");
+  .max(20, "User name must have less than 20 characters")
+  .transform((input) => capitalizeFirstLetter(input));
 
 const userEmailSchema = z
   .email({ error: "invalid email format" })
@@ -19,11 +21,13 @@ const userPasswordSchema = z
 const hasAtLeastOneDefinedField = (data: Record<string, unknown>): boolean =>
   Object.values(data).some((value) => value !== undefined);
 
-export const userCreateSchema = z.object({
-  name: userNameSchema,
-  email: userEmailSchema,
-  password: userPasswordSchema,
-}).strict();
+export const userCreateSchema = z
+  .object({
+    name: userNameSchema,
+    email: userEmailSchema,
+    password: userPasswordSchema,
+  })
+  .strict();
 
 export const userUpdateSchema = z
   .object({
@@ -32,7 +36,8 @@ export const userUpdateSchema = z
   })
   .refine(hasAtLeastOneDefinedField, {
     message: "At least one field must be provided for update",
-  }).strict();
+  })
+  .strict();
 
 export type UserCreateInput = z.infer<typeof userCreateSchema>;
 export type UserUpdateInput = z.infer<typeof userUpdateSchema>;

@@ -6,6 +6,9 @@ import {
   pickByKeys,
   toTimezoneMidnight,
   isValidProgressStatus,
+  customNanoId,
+  normalizeString,
+  buildTripResponseDTO
 } from "@shared/utils";
 import {
   UserNotFoundError,
@@ -14,7 +17,7 @@ import {
   ConflictTripDate,
 } from "@shared/errors";
 
-export interface UseCaseCreate {
+export interface UsecaseCreate {
   (
     tripRepository: TripRepository,
     userRepository: UserRepository,
@@ -22,26 +25,30 @@ export interface UseCaseCreate {
   ): Promise<ResponseTripDTO>;
 }
 
-
-
-export const useCaseCreate: UseCaseCreate = async (
+export const usecaseCreate: UsecaseCreate = async (
   tripRepository: TripRepository,
   userRepository: UserRepository,
   data: CreateTripDTO,
 ) => {
+  const existingUser = await userRepository.findByPublicId(data.userId);
+
+  if (!existingUser) {
+    throw new UserNotFoundError();
+  }
+
   const startDateInTimezone = toTimezoneMidnight(data.startDate, data.timezone);
   const nowTimezone = toTimezoneMidnight(new Date(), data.timezone);
   const startDateTimestamp = data.startDate.getTime();
   const endDateTimestamp = data.endDate.getTime();
 
   const conflictDates = await tripRepository.findConflictDate(
-    data.userId,
+    existingUser.id,
     data.startDate,
     data.endDate,
   );
 
-  if(conflictDates.length > 0){
-     throw new ConflictTripDate({
+  if (conflictDates.length > 0) {
+    throw new ConflictTripDate({
       message: "Conflict dates",
       dateList: conflictDates.map((tripDates) => {
         return {
@@ -74,11 +81,7 @@ export const useCaseCreate: UseCaseCreate = async (
     });
   }
 
-  const existingUser = await userRepository.existsById(data.userId);
-
-  if (!existingUser) {
-    throw new UserNotFoundError({ message: `User ${data.userId} not found` });
-  }
+  const publicId = normalizeString(data.name) + "#" + customNanoId(10);
 
   const baseCreateData = pickByKeys(data, [
     "name",
@@ -91,23 +94,13 @@ export const useCaseCreate: UseCaseCreate = async (
   const tripEntity: Prisma.TripCreateInput = {
     ...baseCreateData,
     status: data.status,
-    user: { connect: { id: data.userId } },
+    publicId,
+    user: { connect: { id: existingUser.id } },
   };
 
   const trip = await tripRepository.create(tripEntity);
 
-  const responseTrip: ResponseTripDTO = pickByKeys(
-    { ...trip, id: String(trip.id) },
-    [
-      "id",
-      "name",
-      "startDate",
-      "endDate",
-      "status",
-      "budgetCents",
-      "createdAt",
-    ],
-  );
+  const responseTrip: ResponseTripDTO = buildTripResponseDTO(trip, data.userId);
 
   return responseTrip;
 };

@@ -22,7 +22,6 @@ import { ItineraryRepositoryImpl } from "./repository";
 import { prisma } from "@lib/prisma";
 import { TripRepositoryImpl } from "@modules/trips/repository";
 import { itineraryCreateSchema, itineraryUpdateSchema } from "./schemas";
-//import type {} from "./repository.contract";
 
 const itinerariesRepository = new ItineraryRepositoryImpl(prisma);
 const tripRepository = new TripRepositoryImpl(prisma);
@@ -41,14 +40,14 @@ router.get(
   "/:id",
   auth,
   validateIdParam(),
-  controllerFindById(itinerariesRepository, usecaseFindById),
+  controllerFindById(itinerariesRepository, tripRepository, usecaseFindById),
 );
 
 router.get(
   "/trip/:tripId",
   auth,
   validateIdParam("tripId"),
-  controllerFindAllByTripId(itinerariesRepository, usecaseFindAllByTripId),
+  controllerFindAllByTripId(itinerariesRepository, tripRepository, usecaseFindAllByTripId),
 );
 
 router.patch(

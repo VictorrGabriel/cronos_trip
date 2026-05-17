@@ -12,7 +12,14 @@ export const usecaseFindAll: UsecaseFindAll = async (
   const users = await userRepository.findAll();
   let usersResponse: ResponseUserDTO[] = [];
   for (const user of users) {
-    usersResponse.push(pickByKeys(user, ["name", "email", "createdAt"]));
+    usersResponse.push(
+      pickByKeys({ ...user, id: user.publicId }, [
+        "name",
+        "email",
+        "createdAt",
+        "id",
+      ]),
+    );
   }
 
   return usersResponse;

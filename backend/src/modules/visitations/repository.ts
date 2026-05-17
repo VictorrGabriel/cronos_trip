@@ -44,6 +44,12 @@ export class VisitationRepositoryImpl
   async findByItineraryId(itineraryId: bigint): Promise<Visitation[]> {
     return await this.model.findMany({ where: { itineraryId } });
   }
+
+  async findByItineraryPublicId(itineraryId: string): Promise<Visitation[]> {
+    return await this.model.findMany({
+      where: { itinerary: { publicId: itineraryId } },
+    });
+  }
 }
 
 // select sum(durationMinutes) from visitation where itineraryId = itineraryId grouopBy durationMinutes;

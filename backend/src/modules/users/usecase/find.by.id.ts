@@ -4,17 +4,23 @@ import { UserNotFoundError } from "@shared/errors";
 import { pickByKeys } from "@shared/utils";
 
 export interface UsecaseFindById {
-  (userRepository: UserRepository, id: bigint): Promise<ResponseUserDTO | null>;
+  (
+    userRepository: UserRepository,
+    publicId: string,
+  ): Promise<ResponseUserDTO | null>;
 }
 
 export const usecaseFindById: UsecaseFindById = async (
   userRepository: UserRepository,
-  id: bigint,
+  publicId: string,
 ) => {
-  const user = await userRepository.findById(id);
+  const user = await userRepository.findByPublicId(publicId);
   if (user === null) {
     throw new UserNotFoundError();
   }
-  const userResponse: ResponseUserDTO = pickByKeys(user, ["name", "email", "createdAt"]);
+  const userResponse: ResponseUserDTO = pickByKeys(
+    { ...user, id: user.publicId },
+    ["name", "email", "createdAt", "id"],
+  );
   return userResponse;
 };

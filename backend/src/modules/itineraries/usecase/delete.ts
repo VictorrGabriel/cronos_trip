@@ -3,7 +3,7 @@
 export interface UsecaseDelete {
   (
     itineraryRepository: ItineraryRepository,
-    itineraryId: bigint,
+    itineraryId: string,
   ): Promise<void>;
 }
 
@@ -11,5 +11,5 @@ export const usecaseDelete: UsecaseDelete = async (
   itineraryRepository,
   itineraryId,
 ) => {
-  await itineraryRepository.delete(itineraryId);
+  await itineraryRepository.deleteByPublicId(itineraryId);
 };
