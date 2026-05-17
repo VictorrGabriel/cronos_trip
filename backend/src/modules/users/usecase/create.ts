@@ -1,9 +1,9 @@
 ﻿import type { UserRepository } from "../repository.contract";
 import type { ResponseUserDTO, CreateUserDTO } from "@shared/dto/user.dto";
 import argon2 from "argon2";
-import { userCreateSchema } from "../schemas";
-import { pickByKeys } from "@shared/utils";
+import { customNanoId, normalizeString, pickByKeys } from "@shared/utils";
 import { EmailConflictError, ValidationError } from "@shared/errors";
+import { nanoid } from "nanoid";
 
 export interface UsecaseCreate {
   (
@@ -16,14 +16,18 @@ export const usecaseCreate: UsecaseCreate = async (
   userRepository: UserRepository,
   data: CreateUserDTO,
 ) => {
-  
-  if(data.name.length < 3){
-    throw new ValidationError({message: "User name must have at least 3 charecters"});
+  if (data.name.length < 3) {
+    throw new ValidationError({
+      message: "User name must have at least 3 charecters",
+    });
   }
+
   const existingEmail = await userRepository.existsByEmail(data.email);
 
   if (existingEmail) {
-    throw new EmailConflictError({ message: `Email ${data.email} already exists` });
+    throw new EmailConflictError({
+      message: `Email ${data.email} already exists`,
+    });
   }
 
   const passwordHash = await argon2.hash(data.password, {
@@ -32,13 +36,20 @@ export const usecaseCreate: UsecaseCreate = async (
     parallelism: 4,
   });
 
+  const publicId = normalizeString(data.name) + "#" + customNanoId(10);
+
   const entity = {
     name: data.name,
     email: data.email,
+    publicId,
     passwordHash,
   };
 
   const user = await userRepository.create(entity);
-  const userResponse: ResponseUserDTO = pickByKeys(user, ["name", "email", "createdAt"]);
+  const userResponse: ResponseUserDTO = pickByKeys(
+    { ...user, id: user.publicId },
+    ["name", "email", "createdAt", "id"],
+  );
+
   return userResponse;
 };

@@ -1,35 +1,57 @@
-import type { ResponseAuthDTO, TokenAuthDTO } from "@shared/dto/auth.dto";
+import type { ResponseAuthDTO, RefreshAuthDTO } from "@shared/dto/auth.dto";
 import type { AuthRepository } from "../repository.contract";
 import argon2 from "argon2";
 import {
   generateAccessToken,
   verifyRefreshToken,
 } from "@shared/utils/auth.helper";
-import { InvalidTokenError } from "@shared/errors";
+import { InvalidTokenError, UserNotFoundError } from "@shared/errors";
+import type { UserRepository } from "@/modules/users/repository.contract";
+import jwt from "jsonwebtoken";
 
 export interface UsecaseRefresh {
   (
     authRepository: AuthRepository,
-    userRefreshToken: string,
-    data: TokenAuthDTO,
+    userRepository: UserRepository,
+    userId: string,
+    data: RefreshAuthDTO,
   ): Promise<string>;
 }
 
 export const usecaseRefresh: UsecaseRefresh = async (
   authRepository,
-  userRefreshToken,
+  userRepository,
+  userId,
   data,
 ) => {
-  verifyRefreshToken(userRefreshToken);
+    const user = await userRepository.findByPublicId(userId);
+  if (!user) {
+    throw new UserNotFoundError();
+  }
+  if (!data.refreshToken) {
+    throw new InvalidTokenError({ message: "Missing refresh token" });
+  }
+  try {
+    verifyRefreshToken(data.refreshToken);
+  } catch (err) {
+    if(err instanceof jwt.JsonWebTokenError){
+      await authRepository.revokedAllByUserId(user.id)
+    }
 
-  const refreshToken = await authRepository.findById(data.jti);
+    throw err;
+  }
+
+
+
+  const refreshToken = await authRepository.findLatestUnrevoked(user.id, data.deviceInfo);
+
   if (!refreshToken) {
     throw new InvalidTokenError({ message: "Refresh token not found" });
   }
 
   const isValidToken = await argon2.verify(
     refreshToken.tokenHash,
-    userRefreshToken,
+    data.refreshToken,
   );
 
   if (!isValidToken) {

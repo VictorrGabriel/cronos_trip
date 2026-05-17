@@ -6,9 +6,9 @@ export const isValidVisitOrderNumber = (order: unknown): boolean => {
   );
 };
 
-export const hasMinuteLeft = (minutesSum: number, minuteToAdd: number): boolean => {
+export const hasMinuteLeft = (minutesSum: number, minutesToAdd: number): boolean => {
   const dayMinutes = 24 * 60;
   const remainingMinutes = dayMinutes - minutesSum;
 
-  return remainingMinutes - minuteToAdd >= 0;
+  return remainingMinutes - minutesToAdd >= 0;
 };

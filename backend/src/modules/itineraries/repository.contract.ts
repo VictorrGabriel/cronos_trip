@@ -8,5 +8,6 @@ export interface ItineraryRepository extends BaseRepository<Itinerary> {
     data: Prisma.ItineraryUpdateInput,
   ): Promise<Itinerary>;
   findByTripId(tripId: bigint): Promise<Itinerary[]>;
+  findByTripPublicId(tripId: string): Promise<Itinerary[]>;
   isFreeDay(tripId: bigint, day: Date): Promise<boolean>;
 }

@@ -21,7 +21,7 @@ export const controllerCreate =
     itineraryCreate: UsecaseCreate,
   ) =>
   async (req: HttpRequest, res: HttpResponse) => {
-    const tripId = BigInt(req.params.tripId as string);
+    const tripId = req.params.tripId as string;
     const itineraryDTO: ItineraryCreateDTO = {
       ...(req.body as ItineraryCreateInput),
       tripId,
@@ -38,12 +38,14 @@ export const controllerCreate =
 export const controllerFindAllByTripId =
   (
     itineraryRepository: ItineraryRepository,
+    tripRepository: TripRepository,
     itineraryFindAllByTripId: UsecaseFindAllByTripId,
   ) =>
   async (req: HttpRequest, res: HttpResponse) => {
-    const tripId = BigInt(req.params.tripId as string);
+    const tripId = req.params.tripId as string;
     const itineraries = await itineraryFindAllByTripId(
       itineraryRepository,
+      tripRepository,
       tripId,
     );
     res.status(200).json(itineraries);
@@ -52,11 +54,12 @@ export const controllerFindAllByTripId =
 export const controllerFindById =
   (
     itineraryRepository: ItineraryRepository,
+      tripRepository: TripRepository,
     itineraryFindById: UsecaseFindById,
   ) =>
   async (req: HttpRequest, res: HttpResponse) => {
-    const id = BigInt(req.params.id as string);
-    const itinerary = await itineraryFindById(itineraryRepository, id);
+    const id = req.params.id as string;
+    const itinerary = await itineraryFindById(itineraryRepository, tripRepository,id);
     res.status(200).json(itinerary);
   };
 
@@ -67,14 +70,14 @@ export const controllerUpdate =
     itineraryUpdate: UsecaseUpdate,
   ) =>
   async (req: HttpRequest, res: HttpResponse) => {
-    const id = BigInt(req.params.id as string);
-    const tripId = BigInt(req.params.tripId as string);
+    const id = req.params.id as string;
+    const tripId = req.params.tripId as string;
     const itineraryDTO: ItineraryUpdateDTO = {
       ...(req.body as ItineraryUpdateInput),
       tripId,
     };
 
-    const itinerary = await itineraryUpdate(
+    await itineraryUpdate(
       itineraryRepository,
       tripRepository,
       id,
@@ -86,7 +89,7 @@ export const controllerUpdate =
 export const controllerDelete =
   (itineraryRepository: ItineraryRepository, itineraryDelete: UsecaseDelete) =>
   async (req: HttpRequest, res: HttpResponse) => {
-    const id = BigInt(req.params.id as string);
+    const id = req.params.id as string;
     await itineraryDelete(itineraryRepository, id);
     res.status(201).json({ message: "itinerary deleted successfully" });
   };

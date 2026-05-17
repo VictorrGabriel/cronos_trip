@@ -3,7 +3,7 @@ import * as z from "zod";
 const visitationPriceCentsSchema = z
   .number({ error: "Price cents must be a non-negative integer" })
   .int({ error: "Price cents must be a non-negative integer" })
-  .min(0, "Price cents must be greater or equal to 0");
+  .min(0, "Price cents must be greater or equal to 0")
 
 const visitaionVisitOrderSchema = z
   .number({ error: "Visit order must be a non-negative integer" })
@@ -12,7 +12,7 @@ const visitaionVisitOrderSchema = z
   .max(10, { error: "Visit order must be less or equal to 10" })
   .nullable();
 const isValidScheduleTime = (input: string | null): boolean => {
-  const regex = /^\d{2}:\d{2}$/;
+  const regex = /^(?:[01]\d|2[0-3]):[0-5]\d|24:00$/; // Matches "00:00" to "23:59" and "24:00"
   return input === null || regex.test(input);
 };
 const visitationScheduleTimeSchema = z
@@ -23,10 +23,10 @@ const visitationScheduleTimeSchema = z
   });
 
 const visitationDurationMinutesSchema = z
-  .number({ error: "Visit order must be a non-negative integer" })
-  .int({ error: "Visit order must be a non-negative integer" })
-  .max(86400, { error: "Visit order must be less or equal to 86400" })
-  .min(0, { error: "Visit order must greater or equal to 0" })
+  .number({ error: "Duration minutes must be a non-negative integer" })
+  .int({ error: "Duration minutes must be a non-negative integer" })
+  .min(0, { error: "Duration minutes must be greater or equal to 0" })
+  .max(86400, { error: "Duration minutes must be less or equal to 86400" })
   .nullable();
 
 const visitationIsVisitedSchema = z.boolean({

@@ -12,9 +12,12 @@ import {
   isValidTotalEstimateCents,
   isValidApiReference,
   isValidDailyQuota,
-  isValidDayDate
+  isValidDayDate,
+  customNanoId,
+  buildItineraryResponseDTO,
 } from "@shared/utils";
 import type { Prisma } from "@prisma/client";
+import { tr } from "zod/locales";
 
 export interface UsecaseCreate {
   (
@@ -29,14 +32,17 @@ export const usecaseCreate: UsecaseCreate = async (
   tripRepository,
   data,
 ) => {
-  const trip = await tripRepository.findById(data.tripId);
+  const trip = await tripRepository.findByPublicId(data.tripId);
 
   if (!trip) {
     throw new TripNotFoundError();
   }
-  const isFreeDay = await itinerariesRepository.isFreeDay(data.tripId, data.dayDate);
-  if(!isFreeDay){
-     throw new InvalidInputError({ message: "This day is not free" });
+  const isFreeDay = await itinerariesRepository.isFreeDay(
+    trip.id,
+    data.dayDate,
+  );
+  if (!isFreeDay) {
+    throw new InvalidInputError({ message: "This day is not free" });
   }
 
   if (!isValidDayDate(trip.startDate, trip.endDate, data.dayDate)) {
@@ -80,18 +86,17 @@ export const usecaseCreate: UsecaseCreate = async (
     "totalEstimateCents",
   ]);
 
+  const publicId = customNanoId(21);
+
   const itineraryEntity: Prisma.ItineraryCreateInput = {
     ...baseCreateItinerary,
-    trip: { connect: { id: data.tripId } },
+    publicId,
+    trip: { connect: { id: trip.id } },
   };
 
   const itinerary = await itinerariesRepository.create(itineraryEntity);
 
-  const itineraryResponse: ItineraryResponseDTO = {
-    ...itinerary,
-    id: String(itinerary.id),
-    tripId: String(itinerary.tripId)
-  };
+  const itineraryResponse: ItineraryResponseDTO = buildItineraryResponseDTO(itinerary, trip.publicId);
 
   return itineraryResponse;
 };

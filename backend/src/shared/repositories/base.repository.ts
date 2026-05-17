@@ -23,7 +23,15 @@ export abstract class BaseRepositoryImpl<T> implements BaseRepository<T> {
     return await this.model.findUnique({ where: { id } });
   }
 
+  async findByPublicId(publicId: string): Promise<T | null> {
+    return await this.model.findUnique({ where: { publicId } });
+  }
+
   async delete(id: number | string | bigint): Promise<T> {
     return await this.model.delete({ where: { id } });
+  }
+
+   async deleteByPublicId(publicId: string): Promise<T> {
+    return await this.model.delete({ where: { publicId } });
   }
 }

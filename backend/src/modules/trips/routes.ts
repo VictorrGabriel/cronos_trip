@@ -7,11 +7,11 @@ import {
   ControllerDelete,
 } from "./controllers";
 import {
-  useCaseCreate,
-  useCaseDelete,
-  useCaseFindById,
-  useCaseFindByUserId,
-  useCaseUpdate,
+  usecaseCreate,
+  usecaseDelete,
+  usecaseFindById,
+  usecaseFindByUserId,
+  usecaseUpdate,
 } from "./usecase/index";
 import { prisma } from "@lib/prisma";
 import type { TripRepository } from "./repository.contract";
@@ -30,27 +30,28 @@ const tripRepository: TripRepository = new TripRepositoryImpl(prisma);
 const userRepository: UserRepository = new UserRepositoryImpl(prisma);
 
 router.get(
-  "/user/",
+  "/user/:userId",
   auth,
-  ControllerFindByUserId(tripRepository, useCaseFindByUserId),
+  validateIdParam("userId"),
+  ControllerFindByUserId(tripRepository, usecaseFindByUserId),
 );
 router.get(
   "/:id",
   auth,
   validateIdParam(),
-  ControllerFindById(tripRepository, useCaseFindById),
+  ControllerFindById(tripRepository, userRepository, usecaseFindById),
 );
 router.post(
-  "/",
+  "/:userId",
   auth,
   validateSchema(tripCreateSchema),
-  ControllerCreate(tripRepository, userRepository, useCaseCreate),
+  ControllerCreate(tripRepository, userRepository, usecaseCreate),
 );
 router.patch(
   "/:id",
   auth, validateSchema(tripUpdateSchema),
-  ControllerUpdate(tripRepository, useCaseUpdate),
+  ControllerUpdate(tripRepository, usecaseUpdate),
 );
-router.delete("/:id", auth, ControllerDelete(tripRepository, useCaseDelete));
+router.delete("/:id", auth, ControllerDelete(tripRepository, usecaseDelete));
 
 export { router as tripRouter };

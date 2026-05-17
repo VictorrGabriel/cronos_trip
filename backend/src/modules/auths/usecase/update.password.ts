@@ -7,7 +7,7 @@ import { UserNotFoundError, PasswordMismatchError } from "@shared/errors";
 export interface UsecaseUpdatePassword {
   (
     userRepository: UserRepository,
-    userId: bigint,
+    userId: string,
     data: UpdatePasswordAuthDTO,
   ): Promise<void>;
 }
@@ -18,7 +18,7 @@ export const usecaseUpdatePassword: UsecaseUpdatePassword = async (
   data,
 ) => {
   updatePasswordSchema.parse(data);
-  const user = await userRepository.findById(userId);
+  const user = await userRepository.findByPublicId(userId);
 
   if(!user){
     throw new UserNotFoundError();
@@ -36,5 +36,5 @@ export const usecaseUpdatePassword: UsecaseUpdatePassword = async (
     parallelism: 4,
   });
 
-  await userRepository.update(userId, { passwordHash });
+  await userRepository.update(user.id, { passwordHash });
 };

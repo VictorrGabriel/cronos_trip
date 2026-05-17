@@ -1,12 +1,12 @@
 import type { TripRepository } from "../repository.contract";
 
-export interface UseCaseDelete {
-  (tripRepository: TripRepository, id: bigint): Promise<void>;
+export interface UsecaseDelete {
+  (tripRepository: TripRepository, id: string): Promise<void>;
 }
 
-export const useCaseDelete: UseCaseDelete = async (
+export const usecaseDelete: UsecaseDelete = async (
   tripRepository: TripRepository,
-  id: bigint,
+  id: string,
 ) => {
-  await tripRepository.delete(id);
+  await tripRepository.deleteByPublicId(id);
 };

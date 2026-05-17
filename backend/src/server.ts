@@ -18,7 +18,6 @@ app.use(`${API_PATH}/trips`, tripRouter);
 app.use(`${API_PATH}/itineraries`, itineraryRouter);
 app.use(`${API_PATH}/visitations`, visitationRouter);
 app.use(globalErrorHandler);
-const PORT = process.env.PORT || 3000;
 
 app.get("/api/v1/health", (req, res) => {
   const healthcheck = {
@@ -37,4 +36,4 @@ app.get("/api/v1/health", (req, res) => {
   }
 });
 
-app.listen(PORT, () => console.log(`Server is running on ${PORT}`));
+export {app};

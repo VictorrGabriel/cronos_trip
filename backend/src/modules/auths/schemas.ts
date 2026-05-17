@@ -1,7 +1,7 @@
 import * as z from "zod";
 
 const userEmailSchema = z
-  .email({ error: "invalid email format" })
+  .email({ error: "Invalid email format" })
   .max(256, "Email must have less than 256 character");
 
 const getUserPasswordSchema = (password = "Password") =>

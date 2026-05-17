@@ -5,12 +5,12 @@ import type {
 import type { Visitation } from "@prisma/client";
 
 export type VisitationCreateDTO = VisitationCreateInput & {
-  itineraryId: bigint;
+  itineraryId: string;
 };
 
 export type VisitationUpdateDTO = VisitationUpdateInput
 
-export type VisitationResponseDTO = Omit<Visitation, "id" | "itineraryId"> & {
+export type VisitationResponseDTO = Omit<Visitation, "id" | "itineraryId" | "publicId"> & {
   id: string;
   itineraryId: string;
 };

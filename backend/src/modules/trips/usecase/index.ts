@@ -1,8 +1,8 @@
-export { useCaseCreate, type UseCaseCreate } from "./create";
-export { useCaseDelete, type UseCaseDelete } from "./delete";
-export { useCaseFindById, type UseCaseFindById } from "./find.by.id";
+export { usecaseCreate, type UsecaseCreate } from "./create";
+export { usecaseDelete, type UsecaseDelete } from "./delete";
+export { usecaseFindById, type UsecaseFindById } from "./find.by.id";
 export {
-  useCaseFindByUserId,
-  type UseCaseFindByUserId,
+  usecaseFindByUserId,
+  type UsecaseFindByUserId,
 } from "./find.by.user.id";
-export { useCaseUpdate, type UseCaseUpdate } from "./update";
+export { usecaseUpdate, type UsecaseUpdate } from "./update";

@@ -1,24 +1,37 @@
 ﻿import type { ItineraryResponseDTO } from "@shared/dto/itinerary.dto";
 import type { ItineraryRepository } from "../repository.contract";
-import { ItineraryNotFoundError } from "@shared/errors";
+import { ItineraryNotFoundError, TripNotFoundError } from "@shared/errors";
+import type { TripRepository } from "@modules/trips/repository.contract";
+import { pickByKeys, buildItineraryResponseDTO } from "@/shared/utils";
 
 export interface UsecaseFindAllByTripId {
   (
     itinerariesRepository: ItineraryRepository,
-    tripId: bigint,
+    tripRepository: TripRepository,
+    tripId: string,
   ): Promise<ItineraryResponseDTO[]>;
 }
 
 export const usecaseFindAllByTripId: UsecaseFindAllByTripId = async (
   itinerariesRepository,
+  tripRepository,
   tripId,
 ) => {
-  const itineraries = await itinerariesRepository.findByTripId(tripId);
+
+  const trip = await tripRepository.findByPublicId(tripId);
+
+  if(!trip){
+    throw new TripNotFoundError();
+  }
+
+  const itineraries = await itinerariesRepository.findByTripId(trip.id);
 
   const itinerariesResponse: ItineraryResponseDTO[] = [];
 
   for (const itinerary of itineraries) {
-    itinerariesResponse.push({ ...itinerary, id: String(itinerary.id), tripId: String(itinerary.tripId) });
+    const itineraryResponse: ItineraryResponseDTO = buildItineraryResponseDTO(itinerary, trip.publicId);
+
+    itinerariesResponse.push(itineraryResponse);
   }
 
   return itinerariesResponse;

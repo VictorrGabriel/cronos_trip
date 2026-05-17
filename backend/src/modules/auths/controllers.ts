@@ -1,13 +1,18 @@
 import type { AuthRepository } from "./repository.contract";
 import type { HttpResponse, HttpRequest } from "@shared/types";
-import type { UpdatePasswordAuthDTO, LoginAuthDTO, TokenAuthDTO } from "@shared/dto/index";
+import type {
+  UpdatePasswordAuthDTO,
+  LoginAuthDTO,
+  RefreshAuthDTO,
+  LogoutAuthDTO,
+} from "@shared/dto/index";
 import type { AuthLoginInput } from "./schemas";
 import type { UserRepository } from "@modules/users/repository.contract";
 import type {
   UsecaseRefresh,
   UsecaseLogin,
   UsecaseLogout,
-  UsecaseUpdatePassword
+  UsecaseUpdatePassword,
 } from "./usecase/index";
 
 export const controllerLogin =
@@ -24,12 +29,8 @@ export const controllerLogin =
       ipAddress,
       deviceInfo,
     };
-
-    const refreshToken = await login(
-      authRepository,
-      userRepository,
-      data,
-    );
+   // console.log(`email: ${data.email}, password: ${data.password}`);
+    const refreshToken = await login(authRepository, userRepository, data);
 
     res.cookie("refreshToken", refreshToken.token, {
       httpOnly: true,
@@ -38,35 +39,54 @@ export const controllerLogin =
       expires: refreshToken.expiresAt,
     });
 
-    res.status(200).json({ accessToken: refreshToken.accessToken, jti: refreshToken.jti });
+    res.status(200).json({ accessToken: refreshToken.accessToken });
   };
 
 export const controllerRefresh =
-  (authRepository: AuthRepository, refresh: UsecaseRefresh) =>
+  (
+    authRepository: AuthRepository,
+    userRepository: UserRepository,
+    refresh: UsecaseRefresh,
+  ) =>
   async (req: HttpRequest, res: HttpResponse): Promise<void> => {
-    const userRefreshToken = req.cookies.refreshToken as string;
-    const data = req.body as TokenAuthDTO;
+    const userRefreshToken = req.cookies.refreshToken;
+    const deviceInfo = req.headers["user-agent"] ?? null;
+    const userId = req.params.userId as string;
+    const data: RefreshAuthDTO = {
+      deviceInfo,
+      refreshToken: userRefreshToken,
+    };
 
-    const accessToken = await refresh(authRepository, userRefreshToken, data);
+    const accessToken = await refresh(
+      authRepository,
+      userRepository,
+      userId,
+      data,
+    );
 
     res.status(200).json({ accessToken });
   };
 
 export const controllerLogout =
-  (authRepository: AuthRepository, logout: UsecaseLogout) =>
+  (
+    authRepository: AuthRepository,
+    userRepository: UserRepository,
+    logout: UsecaseLogout,
+  ) =>
   async (req: HttpRequest, res: HttpResponse): Promise<void> => {
-    const data = req.body as TokenAuthDTO;
-    await logout(authRepository, data);
+    const deviceInfo = req.headers["user-agent"] ?? null;
+    const userId = req.params.userId as string;
+    await logout(authRepository, userRepository, userId, { deviceInfo });
     res.status(201).json({ message: "Logout successfully" });
   };
 
 export const controllerUpdatePassword =
   (userRepository: UserRepository, updatePassword: UsecaseUpdatePassword) =>
   async (req: HttpRequest, res: HttpResponse) => {
-    const userId = BigInt(req.params.userId as string);
+    const userId = req.params.userId as string;
     const data = req.body as UpdatePasswordAuthDTO;
 
     await updatePassword(userRepository, userId, data);
 
-    res.status(200).json({message: "Password updated successfully"});
+    res.status(201).json({ message: "Password updated successfully" });
   };

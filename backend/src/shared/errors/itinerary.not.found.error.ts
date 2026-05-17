@@ -2,7 +2,7 @@
 
 export class ItineraryNotFoundError extends NotFoundError {
   constructor({ message = "Itinerary not found", cause }: ItineraryNotFoundOptions = {}) {
-    super({ message, cause, code: "USER_NOT_FOUND" });
+    super({ message, cause, code: "ITINERARY_NOT_FOUND" });
   }
 }
 

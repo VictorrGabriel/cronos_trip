@@ -25,17 +25,29 @@ export class TripRepositoryImpl
     return await this.model.findMany({ where: { user: { id: userId } } });
   }
 
+ async findByUserPublicId(userId: string): Promise<Trip[]> {
+     return await this.model.findMany({ where: { user: { publicId: userId } } });
+  }
+
   async findConflictDate(
     userId: bigint,
     newStartDate: Date,
     newEndDate: Date,
+    excludeId?: bigint,
   ): Promise<TripDates[]> {
-    return this.model.findMany({select: {startDate: true, endDate: true},
-      where: {
-        userId: userId,
-        startDate: { lte: newEndDate },
-        endDate: { gte: newStartDate },
-      },
+    const whereClause: Prisma.TripWhereInput = {
+      userId,
+      startDate: { lte: newEndDate },
+      endDate: { gte: newStartDate },
+    };
+
+    if (excludeId !== undefined) {
+      Object.assign(whereClause, { NOT: { id: excludeId } });
+    }
+
+    return this.model.findMany({
+      select: { startDate: true, endDate: true },
+      where: whereClause,
     });
   }
 }

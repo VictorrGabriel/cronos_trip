@@ -7,6 +7,8 @@ import {
   isValidVisitOrderNumber,
   hasMinuteLeft,
   pickByKeys,
+  customNanoId,
+  buildVisitationResponseDTO,
 } from "@shared/utils";
 import {
   InvalidInputError,
@@ -28,25 +30,23 @@ export const usecaseCreate: UsecaseCreate = async (
   itineraryRepository,
   data,
 ) => {
-  const itinerary = await itineraryRepository.findById(data.itineraryId);
+  const itinerary = await itineraryRepository.findByPublicId(data.itineraryId);
   if (!itinerary) {
     throw new ItineraryNotFoundError();
   }
 
   const visitationAmount =
-    await visitationRepository.findVisitationTotalByItineraryId(
-      data.itineraryId,
-    );
+    await visitationRepository.findVisitationTotalByItineraryId(itinerary.id);
 
   if (visitationAmount + 1 > itinerary.dailyQuota) {
     throw new ConflictVisitationLimit({
-      message: `Itinerary ${itinerary.id} is full`,
+      message: `Itinerary ${itinerary.publicId} is full`,
     });
   }
 
   if (data.visitOrder) {
     const isFreeOrder = await visitationRepository.isFreeOrder(
-      data.itineraryId,
+      itinerary.id,
       data.visitOrder,
     );
     if (!isFreeOrder) {
@@ -63,7 +63,7 @@ export const usecaseCreate: UsecaseCreate = async (
     }
   }
 
-  const minutesSum = await visitationRepository.minutesSum(data.itineraryId);
+  const minutesSum = await visitationRepository.minutesSum(itinerary.id);
   const dayMinutes = 24 * 60;
   if (
     minutesSum &&
@@ -83,16 +83,18 @@ export const usecaseCreate: UsecaseCreate = async (
     "visitOrder",
   ]);
 
+  const publicId = customNanoId();
+
   const visitation = await visitationRepository.create({
     ...baseCreate,
-    itinerary: { connect: { id: data.itineraryId } },
+    publicId,
+    itinerary: { connect: { id: itinerary.id } },
   });
 
-  const visitationResponse: VisitationResponseDTO = {
-    ...visitation,
-    id: String(visitation.id),
-    itineraryId: String(visitation.itineraryId),
-  };
+  const visitationResponse: VisitationResponseDTO = buildVisitationResponseDTO(
+    visitation,
+    itinerary.publicId,
+  );
 
   return visitationResponse;
 };

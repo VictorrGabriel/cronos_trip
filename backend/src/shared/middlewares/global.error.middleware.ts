@@ -15,6 +15,7 @@ const handleTokenErrors = (err: Error, errorResponse: ErrorResponse) => {
     errorResponse.statusCode = statusCode;
     errorResponse.json = {
       message: "Token expired",
+      code: "TOKEN_EXPIRED",
     };
     return;
   }
@@ -23,6 +24,7 @@ const handleTokenErrors = (err: Error, errorResponse: ErrorResponse) => {
     errorResponse.statusCode = statusCode;
     errorResponse.json = {
       message: "Invalid Token: " + err.message,
+      code: "INVALID_TOKEN",
     };
     return;
   }
@@ -47,13 +49,13 @@ const handlePrismaErrors = (err: Error, errorResponse: ErrorResponse) => {
     errorResponse.statusCode = target.statusCode;
     errorResponse.json = {
       message: target.message,
-      code: err.code,
+      code: target.code,
     };
   }
 
   if (err instanceof Prisma.PrismaClientValidationError) {
     errorResponse.statusCode = 400;
-    errorResponse.json = { message: "Invalid data schema" };
+    errorResponse.json = { message: "Invalid data schema", code: "VALIDATION_ERROR" };
     return;
   }
 };
@@ -76,7 +78,7 @@ const handlerConflictDatesError = (
 const handleAppErrors = (err: Error, errorResponse: ErrorResponse) => {
   if (err instanceof AppError) {
     errorResponse.statusCode = err.statusCode;
-    errorResponse.json = { message: err.message };
+    errorResponse.json = { message: err.message, code: err.code };
     handlerConflictDatesError(err, errorResponse);
     return;
   }
@@ -91,7 +93,7 @@ export const globalErrorHandler = (
   console.error(err);
   const errorResponse: ErrorResponse = {
     statusCode: 500,
-    json: { message: "Internal Server Error" },
+    json: { message: "Internal Server Error", code: "INTERNAL_ERROR" },
   };
 
   handleAppErrors(err, errorResponse);
@@ -104,7 +106,14 @@ export const globalErrorHandler = (
 };
 
 type PrismaErrorMap = Record<string, AppError>;
+type ErrorBase = {
+  message: string;
+  code: string;
+  [key: string]: unknown;
+};
 type ErrorResponse = {
   statusCode: number;
-  json: Record<string, unknown> | unknown[];
+  json: ErrorBase | unknown[];
 };
+
+

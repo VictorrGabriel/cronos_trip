@@ -4,28 +4,29 @@ import { userUpdateSchema } from "../schemas";
 import { cleanByAllowedKeys } from "@shared/utils";
 import { EmailConflictError } from "@shared/errors";
 
-export interface UsecaseUpdate{
-    (
-  userRepository: UserRepository,
-  data: UpdateUserDTO,
-  id: bigint,
-): Promise<void>
+export interface UsecaseUpdate {
+  (
+    userRepository: UserRepository,
+    data: UpdateUserDTO,
+    publicId: string,
+  ): Promise<void>;
 }
 
 export const usecaseUpdate: UsecaseUpdate = async (
   userRepository: UserRepository,
   data: UpdateUserDTO,
-  id: bigint,
+  publicId: string,
 ) => {
-  const validatedData = userUpdateSchema.parse(data);
-  const existingEmail = validatedData.email
-    ? await userRepository.existsByEmail(validatedData.email)
+  const existingEmail = data.email
+    ? await userRepository.existsByEmail(data.email)
     : false;
 
   if (existingEmail) {
-    throw new EmailConflictError({ message: `Email ${validatedData.email} already exists` });
+    throw new EmailConflictError({
+      message: `Email ${data.email} already exists`,
+    });
   }
 
-  const entity = cleanByAllowedKeys(validatedData, ["email", "name"]);
-  await userRepository.update(id, entity);
+  const entity = cleanByAllowedKeys(data, ["email", "name"]);
+  await userRepository.updateByPublicId(publicId, entity);
 };

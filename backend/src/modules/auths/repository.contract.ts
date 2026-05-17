@@ -15,4 +15,6 @@ export interface AuthRepository extends BaseRepository<RefreshToken> {
     ipAddress: string | null,
     deviceInfo: string | null
   ): Promise<RefreshToken[]>;
+  findLatestUnrevoked(userId: bigint, deviceInfo: string | null): Promise<RefreshToken| null>;
+  revolkedByDevice(userId: bigint, deviceInfo: string | null): Promise<void>;
 }
