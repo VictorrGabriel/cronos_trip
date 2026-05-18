@@ -20,9 +20,17 @@ enum ProgressStatus {
   @@map("progress_status")
 }
 
+enum Role {
+  USER
+  ADMIN
+
+  @@map("role")
+}
+
 model User {
   id            BigInt         @id @default(autoincrement()) @map("user_id")
   publicId      String         @unique @map("public_id")
+  role          Role           @default(USER)
   email         String         @unique
   name          String
   passwordHash  String         @map("password_hash")
@@ -64,8 +72,8 @@ model Itinerary {
   tripId             BigInt         @map("trip_id")
   visitations        Visitation[]
 
-  @@map("itineraries")
   @@unique([tripId, dayDate])
+  @@map("itineraries")
 }
 
 model Visitation {
