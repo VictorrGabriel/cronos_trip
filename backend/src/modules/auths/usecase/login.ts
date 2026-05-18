@@ -48,7 +48,6 @@ export const usecaseLogin: UsecaseLogin = async (
     throw new InvalidCredentialsError();
   }
   
- // console.log(`email: ${data.email}, password: ${data.password}, validPassword: ${isValidPassword}`);
   const token = generateRefreshToken(String(user.id));
   const tokenHash = await argon2.hash(token);
 
@@ -61,7 +60,7 @@ export const usecaseLogin: UsecaseLogin = async (
   };
 
   const refreshToken = await authRepository.create(entity);
-  const accessToken = generateAccessToken(String(user.id));
+  const accessToken = generateAccessToken(user.publicId, user.role);
 
   const authResponse: ResponseAuthDTO = pickByKeys(
     { ...refreshToken, token, accessToken },

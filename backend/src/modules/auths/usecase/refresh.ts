@@ -1,4 +1,4 @@
-import type { ResponseAuthDTO, RefreshAuthDTO } from "@shared/dto/auth.dto";
+import type { RefreshAuthDTO } from "@shared/dto/auth.dto";
 import type { AuthRepository } from "../repository.contract";
 import argon2 from "argon2";
 import {
@@ -31,17 +31,15 @@ export const usecaseRefresh: UsecaseRefresh = async (
   if (!data.refreshToken) {
     throw new InvalidTokenError({ message: "Missing refresh token" });
   }
+
   try {
     verifyRefreshToken(data.refreshToken);
   } catch (err) {
     if(err instanceof jwt.JsonWebTokenError){
       await authRepository.revokedAllByUserId(user.id)
     }
-
     throw err;
   }
-
-
 
   const refreshToken = await authRepository.findLatestUnrevoked(user.id, data.deviceInfo);
 
@@ -65,7 +63,7 @@ export const usecaseRefresh: UsecaseRefresh = async (
     throw new InvalidTokenError({ message: "Refresh token revoked" });
   }
 
-  const accessToken = generateAccessToken(String(refreshToken.userId));
+  const accessToken = generateAccessToken(user.publicId, user.role);
 
   return accessToken;
 };

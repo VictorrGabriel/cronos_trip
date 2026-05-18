@@ -7,4 +7,5 @@ export type ResponseUserDTO = {
   name: string;
   email: string;
   createdAt: Date;
-};
+  role?: string
+} ;
