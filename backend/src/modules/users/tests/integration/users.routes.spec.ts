@@ -40,39 +40,63 @@ describe("User routes", () => {
   );
   describe("GET /api/v1/users", () => {
     it("should respond with a list of users", async () => {
+      const adminUser = makeUserRecord({
+        role: "ADMIN",
+      });
       const users = [
         makeUserRecord({ publicId: "alice#0000000001", name: "Alice" }),
         makeUserRecord({ publicId: "bob#0000000002", name: "Bob" }),
+        adminUser,
       ];
+      const accessToken = makeAccessToken(adminUser.publicId, adminUser.role);
 
       prismaMock.user.findMany.mockResolvedValue(users);
 
-      const response = await request(app).get(baseUrl).expect(200);
+      const response = await request(app)
+        .get(baseUrl)
+        .set("Authorization", `Bearer ${accessToken}`)
+        .expect(200);
 
       expect(Array.isArray(response.body)).toBe(true);
-      expect(response.body).toHaveLength(2);
+      expect(response.body).toHaveLength(3);
       expect(response.body).toEqual(
         expect.arrayContaining([
           expect.objectContaining({
             id: "alice#0000000001",
             name: "Alice",
             email: "john.doe@example.com",
+            role: "USER"
           }),
           expect.objectContaining({
             id: "bob#0000000002",
             name: "Bob",
             email: "john.doe@example.com",
+            role: "USER"
           }),
+          {
+            id: adminUser.publicId,
+            name: adminUser.name,
+            email: adminUser.email,
+            createdAt: adminUser.createdAt.toISOString(),
+            role: adminUser.role,
+          },
         ]),
       );
     });
 
-    it("should respond with an empty list when there are no users", async () => {
-      prismaMock.user.findMany.mockResolvedValue([]);
+    it("should return 403 for forbidden access", async () => {
+      const user = makeUserRecord();
+      const accessToken = makeAccessToken(user.publicId);
 
-      const response = await request(app).get(baseUrl).expect(200);
+      const response = await request(app)
+        .get(baseUrl)
+        .set("Authorization", `Bearer ${accessToken}`)
+        .expect(403);
 
-      expect(response.body).toEqual([]);
+      expect(response.body).toEqual({
+        message: "Access denied",
+        code: "AUTHORIZATION_ERROR",
+      });
     });
   });
 
@@ -105,6 +129,8 @@ describe("User routes", () => {
         email: payload.email,
       });
       expect(new Date(response.body.createdAt).getTime()).not.toBeNaN();
+      expect(response.body).not.toHaveProperty("role");
+      expect(response.body).not.toHaveProperty("passwordHash");
     });
 
     it("should return 400 when email format is invalid", async () => {

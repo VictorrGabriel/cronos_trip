@@ -1,7 +1,7 @@
 import { generateAccessToken, verifyAccessToken } from "../utils";
 import type { RefreshToken } from "@prisma/client";
 
-export const makeAccessToken = (userId: string) => generateAccessToken(userId);
+export const makeAccessToken = (userId: string, role: string = "USER") => generateAccessToken(userId, role);
 
 export const checkAccessToken = (token: string) => verifyAccessToken(token);
 

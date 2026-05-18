@@ -5,10 +5,10 @@
   "main": "src/server.js",
   "scripts": {
     "test": "jest --runInBand",
-    "test:db": "dotenv -e .env.test & npx jest --runInBand",
+    "test:db": "dotenv -e .env.test npx jest --runInBand",
     "test:routes": "jest --testPathPatterns=src/modules/.*/tests/integration/.*\\.routes\\.spec\\.ts --runInBand",
     "dev": "tsx --watch src/index.ts",
-    "migrate:reset": "npx prisma migrate reset",
+    "migrate:reset": "npx prisma migrate reset && npx prisma generate",
     "migrate:dev": "npx prisma migrate dev",
     "migrate:deploy": "npx prisma migrate deploy",
     "migrate:status": "npx prisma migrate status"

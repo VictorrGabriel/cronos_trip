@@ -16,14 +16,14 @@ import {
 } from "./usecase";
 import { UserRepositoryImpl } from "./repository";
 import { prisma } from "@lib/prisma";
-import { validateSchema, auth, validateIdParam } from "@shared/middlewares/index";
+import { validateSchema, auth, adminAuth, validateIdParam } from "@shared/middlewares/index";
 import { userCreateSchema, userUpdateSchema } from "./schemas";
 
 const userRouter = Router();
 
 const userRepository: UserRepository = new UserRepositoryImpl(prisma);
 
-userRouter.get("/", controllerFindAll(userRepository, usecaseFindAll));
+userRouter.get("/", adminAuth, controllerFindAll(userRepository, usecaseFindAll));
 userRouter.get("/:id", auth, validateIdParam(), controllerFindById(userRepository, usecaseFindById));
 userRouter.post(
   "/",

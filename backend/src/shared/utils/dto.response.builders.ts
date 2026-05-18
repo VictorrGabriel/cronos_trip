@@ -1,8 +1,9 @@
-import type { Itinerary, Trip, Visitation } from "@prisma/client";
+import type { Itinerary, Trip, User, Visitation } from "@prisma/client";
 import type {
   ItineraryResponseDTO,
   ResponseTripDTO,
   VisitationResponseDTO,
+  ResponseUserDTO
 } from "@shared/dto";
 import { pickByKeys } from "./object.helper";
 
@@ -74,3 +75,20 @@ export const buildVisitationResponseDTO = (
 
   return visitationResponse;
 };
+
+export const buildUserResponseDTO = (user: User, roleInicluded: boolean = false): ResponseUserDTO => {
+  const baseResponseDTO = pickByKeys(user, [
+    "name",
+    "email", 
+    "createdAt"
+  ]);
+  
+  const userResponse: ResponseUserDTO = {
+    ...baseResponseDTO,
+    id: user.publicId,
+  }
+
+  roleInicluded && (userResponse.role = user.role);
+
+  return userResponse;
+}

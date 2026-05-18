@@ -7,5 +7,6 @@ export const makeUserRecord = (overrides: Partial<User> = {}): User => ({
   email: "john.doe@example.com",
   passwordHash: "hashed-password",
   createdAt: new Date("2026-05-14T00:00:00.000Z"),
+  role: "USER",
   ...overrides,
 });

@@ -1,9 +1,9 @@
 ﻿import type { UserRepository } from "../repository.contract";
-import type { ResponseUserDTO, CreateUserDTO } from "@shared/dto/user.dto";
+import type { ResponseUserDTO, CreateUserDTO } from "@shared/dto";
 import argon2 from "argon2";
-import { customNanoId, normalizeString, pickByKeys } from "@shared/utils";
+import { customNanoId, normalizeString } from "@shared/utils";
 import { EmailConflictError, ValidationError } from "@shared/errors";
-import { nanoid } from "nanoid";
+import { buildUserResponseDTO } from "@/shared/utils/dto.response.builders";
 
 export interface UsecaseCreate {
   (
@@ -46,10 +46,7 @@ export const usecaseCreate: UsecaseCreate = async (
   };
 
   const user = await userRepository.create(entity);
-  const userResponse: ResponseUserDTO = pickByKeys(
-    { ...user, id: user.publicId },
-    ["name", "email", "createdAt", "id"],
-  );
+  const userResponse: ResponseUserDTO = buildUserResponseDTO(user)
 
   return userResponse;
 };

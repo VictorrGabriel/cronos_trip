@@ -1,7 +1,7 @@
-﻿import type { UserRepository } from "../repository.contract";
+﻿import { buildUserResponseDTO } from "@/shared/utils/dto.response.builders";
+import type { UserRepository } from "../repository.contract";
 import type { ResponseUserDTO } from "@shared/dto/user.dto";
 import { UserNotFoundError } from "@shared/errors";
-import { pickByKeys } from "@shared/utils";
 
 export interface UsecaseFindById {
   (
@@ -18,9 +18,6 @@ export const usecaseFindById: UsecaseFindById = async (
   if (user === null) {
     throw new UserNotFoundError();
   }
-  const userResponse: ResponseUserDTO = pickByKeys(
-    { ...user, id: user.publicId },
-    ["name", "email", "createdAt", "id"],
-  );
+  const userResponse: ResponseUserDTO = buildUserResponseDTO(user)
   return userResponse;
 };
