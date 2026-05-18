@@ -39,5 +39,5 @@ export const userUpdateSchema = z
   })
   .strict();
 
-export type UserCreateInput = z.infer<typeof userCreateSchema>;
-export type UserUpdateInput = z.infer<typeof userUpdateSchema>;
+export type UserCreateSchema = z.infer<typeof userCreateSchema>;
+export type UserUpdateSchema = z.infer<typeof userUpdateSchema>;
