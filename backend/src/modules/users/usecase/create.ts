@@ -6,15 +6,21 @@ import { EmailConflictError } from "@shared/errors";
 import argon2 from "argon2";
 import type { Prisma } from "@prisma/client";
 
+interface ValidateCreate {
+  (data: UserCreateDTO, existingUser: boolean): void;
+}
+
+export const validateCreate: ValidateCreate = (data, existingEmail) => {
+  if (existingEmail) {
+    throw new EmailConflictError();
+  }
+};
+
 export interface UsecaseCreate {
   (
     userRepository: UserRepository,
     data: UserCreateDTO,
   ): Promise<UserResponseDTO>;
-}
-
-interface ValidateCreate {
-  (data: UserCreateDTO, existingUser: boolean): void;
 }
 
 export const usecaseCreate: UsecaseCreate = async (
@@ -46,10 +52,4 @@ export const usecaseCreate: UsecaseCreate = async (
   const userResponse: UserResponseDTO = buildUserResponseDTO(user);
 
   return userResponse;
-};
-
-export const validateCreate: ValidateCreate = (data, existingEmail) => {
-  if (existingEmail) {
-    throw new EmailConflictError();
-  }
 };
