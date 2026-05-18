@@ -4,16 +4,22 @@ import { cleanByAllowedKeys } from "@shared/utils";
 import { EmailConflictError } from "@shared/errors";
 import type { Prisma } from "@prisma/client";
 
+interface ValidateUpdate {
+  (data: UserUpdateDTO, existingEmail: boolean): void;
+}
+
+export const validateUpdate: ValidateUpdate = (data, existingEmail) => {
+  if (existingEmail) {
+    throw new EmailConflictError();
+  }
+};
+
 export interface UsecaseUpdate {
   (
     userRepository: UserRepository,
     data: UserUpdateDTO,
     publicId: string,
   ): Promise<void>;
-}
-
-interface ValidateUpdate {
-  (data: UserUpdateDTO, existingEmail: boolean): void;
 }
 
 export const usecaseUpdate: UsecaseUpdate = async (
@@ -33,10 +39,4 @@ export const usecaseUpdate: UsecaseUpdate = async (
   ]);
 
   await userRepository.updateByPublicId(publicId, entityUpdate);
-};
-
-export const validateUpdate: ValidateUpdate = (data, existingEmail) => {
-  if (existingEmail) {
-    throw new EmailConflictError();
-  }
 };
