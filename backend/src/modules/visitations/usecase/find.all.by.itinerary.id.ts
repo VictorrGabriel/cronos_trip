@@ -2,7 +2,7 @@ import type { VisitationResponseDTO } from "@shared/dto/visitation.dto";
 import type { VisitationRepository } from "../repository.contract";
 import type { ItineraryRepository } from "@modules/itineraries/repository.contract";
 import { ItineraryNotFoundError } from "@shared/errors";
-import { buildVisitationResponseDTO } from "@/shared/utils/dto.response.builders";
+import { buildVisitationResponseDTO } from "@/shared/dto";
 import type { Itinerary } from "@prisma/client";
 
 export interface UsecaseFindAllByItineraryId {
