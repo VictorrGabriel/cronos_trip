@@ -3,9 +3,9 @@ import type {
   ItineraryResponseDTO,
   ResponseTripDTO,
   VisitationResponseDTO,
-  ResponseUserDTO
+  UserResponseDTO
 } from "@shared/dto";
-import { pickByKeys } from "./object.helper";
+import { pickByKeys } from "../utils";
 
 export const buildItineraryResponseDTO = (
   itinerary: Itinerary,
@@ -76,14 +76,14 @@ export const buildVisitationResponseDTO = (
   return visitationResponse;
 };
 
-export const buildUserResponseDTO = (user: User, roleInicluded: boolean = false): ResponseUserDTO => {
+export const buildUserResponseDTO = (user: User, roleInicluded: boolean = false): UserResponseDTO => {
   const baseResponseDTO = pickByKeys(user, [
     "name",
     "email", 
     "createdAt"
   ]);
   
-  const userResponse: ResponseUserDTO = {
+  const userResponse: UserResponseDTO = {
     ...baseResponseDTO,
     id: user.publicId,
   }

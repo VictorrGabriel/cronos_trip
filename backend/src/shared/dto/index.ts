@@ -1,4 +1,4 @@
-export type { CreateUserDTO, ResponseUserDTO, UpdateUserDTO } from "./user.dto";
+export type { UserCreateDTO, UserUpdateDTO, UserResponseDTO } from "./user.dto";
 export type { CreateTripDTO, ResponseTripDTO, UpdateTripDTO } from "./trip.dto";
 
 export type {
@@ -13,4 +13,9 @@ export type {
   ItineraryResponseDTO,
   ItineraryUpdateDTO,
 } from "./itinerary.dto";
-export type { VisitationCreateDTO, VisitationResponseDTO, VisitationUpdateDTO} from "./visitation.dto"
+export type {
+  VisitationCreateDTO,
+  VisitationResponseDTO,
+  VisitationUpdateDTO,
+} from "./visitation.dto";
+export {buildItineraryResponseDTO, buildTripResponseDTO, buildUserResponseDTO, buildVisitationResponseDTO} from "./dto.response.builders"
