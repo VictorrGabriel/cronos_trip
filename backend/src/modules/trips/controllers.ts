@@ -7,7 +7,7 @@ import type {
 } from "./usecase/index";
 import type { TripRepository } from "./repository.contract";
 import type { HttpResponse, HttpRequest } from "@shared/types";
-import type { CreateTripDTO, UpdateTripDTO } from "@shared/dto/trip.dto";
+import type { TripCreateDTO, TripUpdateDTO } from "@shared/dto/trip.dto";
 import type { UserRepository } from "@modules/users/repository.contract";
 
 export const ControllerFindByUserId =
@@ -34,7 +34,7 @@ export const ControllerCreate =
   ) =>
   async (req: HttpRequest, res: HttpResponse): Promise<void> => {
     const userId = req.params.userId as string;
-    const requestData = req.body as Omit<CreateTripDTO, "userId">;
+    const requestData = req.body as Omit<TripCreateDTO, "userId">;
     const trip = await createTrip(tripRepository, userRepository, {
       ...requestData,
       userId,
@@ -44,7 +44,7 @@ export const ControllerCreate =
 export const ControllerUpdate =
   (tripRepository: TripRepository, updateTrip: UsecaseUpdate) =>
   async (req: HttpRequest, res: HttpResponse): Promise<void> => {
-    const data = req.body as UpdateTripDTO;
+    const data = req.body as TripUpdateDTO;
 
     const id = req.params.id as string;
     await updateTrip(tripRepository, data, id);
