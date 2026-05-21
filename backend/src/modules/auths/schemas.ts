@@ -37,6 +37,6 @@ export const tokenSchema = z.object({
   jti: jwiSchema,
 }).strict();
 
-export type AuthLoginInput = z.infer<typeof loginSchema>;
-export type AuthUpdatePasswordInput = z.infer<typeof updatePasswordSchema>;
-export type AuthTokenInput = z.infer<typeof tokenSchema>;
+export type AuthLoginSchema = z.infer<typeof loginSchema>;
+export type AuthUpdatePasswordSchema = z.infer<typeof updatePasswordSchema>;
+export type AuthTokenSchema = z.infer<typeof tokenSchema>;
