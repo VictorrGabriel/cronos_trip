@@ -1,13 +1,13 @@
-﻿import type { UserResponseDTO } from "@shared/dto/user.dto";
+﻿import { buildUserResponseDTO } from "@/shared/utils/dto.response.builders";
 import type { UserRepository } from "../repository.contract";
-import { buildUserResponseDTO } from "@/shared/dto/dto.response.builders";
+import type { ResponseUserDTO } from "@shared/dto/user.dto";
 import { UserNotFoundError } from "@shared/errors";
 
 export interface UsecaseFindById {
   (
     userRepository: UserRepository,
     publicId: string,
-  ): Promise<UserResponseDTO | null>;
+  ): Promise<ResponseUserDTO | null>;
 }
 
 export const usecaseFindById: UsecaseFindById = async (
@@ -15,11 +15,9 @@ export const usecaseFindById: UsecaseFindById = async (
   publicId: string,
 ) => {
   const user = await userRepository.findByPublicId(publicId);
-
   if (user === null) {
     throw new UserNotFoundError();
   }
-  
-  const userResponse: UserResponseDTO = buildUserResponseDTO(user)
+  const userResponse: ResponseUserDTO = buildUserResponseDTO(user)
   return userResponse;
 };

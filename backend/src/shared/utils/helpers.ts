@@ -23,7 +23,3 @@ export const capitalizeFirstLetter = (str: string) => {
 
   return newStr;
 };
-
-export const buildPublicId = (namespace: string) => {
-  return `${normalizeString(namespace)}#${customNanoId(10)}`; 
-}

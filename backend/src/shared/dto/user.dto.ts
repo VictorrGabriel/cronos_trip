@@ -1,8 +1,8 @@
-import type { UserCreateSchema, UserUpdateSchema } from "@modules/users/schemas";
+import type { UserCreateInput, UserUpdateInput } from "@modules/users/schemas";
 
-export type UserCreateDTO = UserCreateSchema;
-export type UserUpdateDTO = UserUpdateSchema;
-export type UserResponseDTO = {
+export type CreateUserDTO = UserCreateInput;
+export type UpdateUserDTO = UserUpdateInput;
+export type ResponseUserDTO = {
   id: string
   name: string;
   email: string;

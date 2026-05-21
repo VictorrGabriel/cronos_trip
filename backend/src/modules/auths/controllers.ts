@@ -1,12 +1,12 @@
 import type { AuthRepository } from "./repository.contract";
 import type { HttpResponse, HttpRequest } from "@shared/types";
 import type {
-  AuthUpdatePasswordDTO,
-  AuthLoginDTO,
-  AuthRefreshDTO,
-  AuthLogoutDTO,
+  UpdatePasswordAuthDTO,
+  LoginAuthDTO,
+  RefreshAuthDTO,
+  LogoutAuthDTO,
 } from "@shared/dto/index";
-import type { AuthLoginSchema } from "./schemas";
+import type { AuthLoginInput } from "./schemas";
 import type { UserRepository } from "@modules/users/repository.contract";
 import type {
   UsecaseRefresh,
@@ -24,8 +24,8 @@ export const controllerLogin =
   async (req: HttpRequest, res: HttpResponse): Promise<void> => {
     const ipAddress = req.ip ?? null;
     const deviceInfo = req.headers["user-agent"] ?? null;
-    const data: AuthLoginDTO = {
-      ...(req.body as AuthLoginSchema),
+    const data: LoginAuthDTO = {
+      ...(req.body as AuthLoginInput),
       ipAddress,
       deviceInfo,
     };
@@ -52,7 +52,7 @@ export const controllerRefresh =
     const userRefreshToken = req.cookies.refreshToken;
     const deviceInfo = req.headers["user-agent"] ?? null;
     const userId = req.params.userId as string;
-    const data: AuthRefreshDTO = {
+    const data: RefreshAuthDTO = {
       deviceInfo,
       refreshToken: userRefreshToken,
     };
@@ -76,9 +76,7 @@ export const controllerLogout =
   async (req: HttpRequest, res: HttpResponse): Promise<void> => {
     const deviceInfo = req.headers["user-agent"] ?? null;
     const userId = req.params.userId as string;
-    const data: AuthLogoutDTO = { deviceInfo };
-
-    await logout(authRepository, userRepository, userId, data);
+    await logout(authRepository, userRepository, userId, { deviceInfo });
     res.status(201).json({ message: "Logout successfully" });
   };
 
@@ -86,7 +84,7 @@ export const controllerUpdatePassword =
   (userRepository: UserRepository, updatePassword: UsecaseUpdatePassword) =>
   async (req: HttpRequest, res: HttpResponse) => {
     const userId = req.params.userId as string;
-    const data = req.body as AuthUpdatePasswordDTO;
+    const data = req.body as UpdatePasswordAuthDTO;
 
     await updatePassword(userRepository, userId, data);
 

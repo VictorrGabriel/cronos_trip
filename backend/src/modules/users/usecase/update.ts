@@ -1,8 +1,8 @@
 ﻿import type { UserRepository } from "../repository.contract";
-import type { UserUpdateDTO } from "@shared/dto";
+import type { UpdateUserDTO } from "@shared/dto/user.dto";
+import { userUpdateSchema } from "../schemas";
 import { cleanByAllowedKeys } from "@shared/utils";
 import { EmailConflictError } from "@shared/errors";
-import type { Prisma } from "@prisma/client";
 
 interface ValidateUpdate {
   (data: UserUpdateDTO, existingEmail: boolean): void;
@@ -17,14 +17,14 @@ export const validateUpdate: ValidateUpdate = (data, existingEmail) => {
 export interface UsecaseUpdate {
   (
     userRepository: UserRepository,
-    data: UserUpdateDTO,
+    data: UpdateUserDTO,
     publicId: string,
   ): Promise<void>;
 }
 
 export const usecaseUpdate: UsecaseUpdate = async (
   userRepository: UserRepository,
-  data: UserUpdateDTO,
+  data: UpdateUserDTO,
   publicId: string,
 ) => {
   const existingEmail = data.email

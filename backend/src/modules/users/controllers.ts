@@ -1,6 +1,6 @@
 import type { UserRepository } from "./repository.contract";
 import type { HttpRequest, HttpResponse } from "@shared/types";
-import type { UserCreateDTO, UserUpdateDTO } from "@shared/dto/user.dto";
+import type { CreateUserDTO, UpdateUserDTO } from "@shared/dto/user.dto";
 import type {
   UsecaseCreate,
   UsecaseFindAll,
@@ -27,7 +27,7 @@ export const controllerFindById =
 export const controllerCreate =
   (userRepository: UserRepository, create: UsecaseCreate) =>
   async (req: HttpRequest, res: HttpResponse): Promise<void> => {
-    const data = req.body as UserCreateDTO;
+    const data = req.body as CreateUserDTO;
     const user = await create(userRepository, data);
 
     res.status(200).json(user);
@@ -37,7 +37,7 @@ export const controllerUpdate =
   (userRepository: UserRepository, update: UsecaseUpdate) =>
   async (req: HttpRequest, res: HttpResponse): Promise<void> => {
     const publicId = req.params.id as string;
-    const data = req.body as UserUpdateDTO;
+    const data = req.body as UpdateUserDTO;
 
     await update(userRepository, data, publicId);
 
