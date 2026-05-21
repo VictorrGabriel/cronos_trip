@@ -1,16 +1,26 @@
-export type { CreateUserDTO, ResponseUserDTO, UpdateUserDTO } from "./user.dto";
+export type { UserCreateDTO, UserUpdateDTO, UserResponseDTO } from "./user.dto";
 export type { TripCreateDTO, TripResponseDTO, TripUpdateDTO } from "./trip.dto";
 
 export type {
-  LoginAuthDTO,
-  ResponseAuthDTO,
-  UpdatePasswordAuthDTO,
-  LogoutAuthDTO,
-  RefreshAuthDTO,
+  AuthLogoutDTO,
+  AuthRefreshDTO,
+  AuthResponseDTO,
+  AuthUpdatePasswordDTO,
+  AuthLoginDTO
 } from "./auth.dto";
 export type {
   ItineraryCreateDTO,
   ItineraryResponseDTO,
   ItineraryUpdateDTO,
 } from "./itinerary.dto";
-export type { VisitationCreateDTO, VisitationResponseDTO, VisitationUpdateDTO} from "./visitation.dto"
+export type {
+  VisitationCreateDTO,
+  VisitationResponseDTO,
+  VisitationUpdateDTO,
+} from "./visitation.dto";
+export {
+  buildItineraryResponseDTO,
+  buildTripResponseDTO,
+  buildUserResponseDTO,
+  buildVisitationResponseDTO,
+} from "./dto.response.builders";
