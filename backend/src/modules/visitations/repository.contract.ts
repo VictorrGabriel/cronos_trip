@@ -1,6 +1,9 @@
-import type { Visitation } from "@prisma/client";
+import type { Prisma, Visitation } from "@prisma/client";
 import type { BaseRepository } from "@shared/repositories";
-import { Prisma } from "@prisma/client";
+
+export type VisitationWithItineraryPublicId = Prisma.VisitationGetPayload<{
+  include: { itinerary: { select: { publicId: true } } };
+}>;
 
 export interface VisitationRepository extends BaseRepository<Visitation> {
   create(data: Prisma.VisitationCreateInput): Promise<Visitation>;
@@ -8,6 +11,9 @@ export interface VisitationRepository extends BaseRepository<Visitation> {
   isFreeOrder(itineraryId: bigint, order: number): Promise<boolean>;
   minutesSum(itineraryId: bigint): Promise<number | null>;
   findVisitationTotalByItineraryId(itineraryId: bigint): Promise<number>;
-  findByItineraryId(itineraryId: bigint): Promise<Visitation[]>
-  findByItineraryPublicId(itineraryId: string): Promise<Visitation[]>
+  findByItineraryId(itineraryId: bigint): Promise<Visitation[]>;
+  findByItineraryPublicId(itineraryId: string): Promise<Visitation[]>;
+  findByPublicIdWithItineraryPublicId(
+    publicId: string,
+  ): Promise<VisitationWithItineraryPublicId | null>;
 }

@@ -1,5 +1,8 @@
 import { BaseRepositoryImpl } from "@shared/repositories";
-import type { VisitationRepository } from "./repository.contract";
+import type {
+  VisitationRepository,
+  VisitationWithItineraryPublicId,
+} from "./repository.contract";
 import type { Prisma, Visitation, PrismaClient } from "@prisma/client";
 
 export class VisitationRepositoryImpl
@@ -24,8 +27,9 @@ export class VisitationRepositoryImpl
 
   async isFreeOrder(itineraryId: bigint, order: number): Promise<boolean> {
     return (
-      (await this.model.findFirst({
-        where: { itineraryId, visitOrder: order },
+      (await this.model.findUnique({
+        select: { id: true },
+        where: { itineraryId_visitOrder: { itineraryId, visitOrder: order } },
       })) === null
     );
   }
@@ -33,6 +37,7 @@ export class VisitationRepositoryImpl
   async minutesSum(itineraryId: bigint): Promise<number | null> {
     const aggregate = await this.model.aggregate({
       _sum: { durationMinutes: true },
+      where: { itineraryId },
     });
     return aggregate._sum.durationMinutes;
   }
@@ -48,6 +53,15 @@ export class VisitationRepositoryImpl
   async findByItineraryPublicId(itineraryId: string): Promise<Visitation[]> {
     return await this.model.findMany({
       where: { itinerary: { publicId: itineraryId } },
+    });
+  }
+
+  async findByPublicIdWithItineraryPublicId(
+    publicId: string,
+  ): Promise<VisitationWithItineraryPublicId | null> {
+    return await this.model.findUnique({
+      include: { itinerary: { select: { publicId: true } } },
+      where: { publicId },
     });
   }
 }
