@@ -26,41 +26,34 @@ export class AuthRepositoryImpl
   }
 
   async revokedAllByUserId(userId: bigint): Promise<void> {
-    await this.prisma.$transaction(async (tx) => {
-      await tx.refreshToken.updateMany({
-        data: { revoked: true },
-        where: { userId },
-      });
+    await this.model.updateMany({
+      data: { revoked: true },
+      where: { userId, revoked: false },
     });
   }
 
   async revokedById(id: bigint): Promise<void> {
-    await this.prisma.$transaction(async (tx) => {
-      await tx.refreshToken.update({ data: { revoked: true }, where: { id } });
-    });
+    await this.model.update({ data: { revoked: true }, where: { id } });
   }
 
   async create(data: Prisma.RefreshTokenCreateInput): Promise<RefreshToken> {
-    return await this.prisma.$transaction(async (tx) => {
-      return await tx.refreshToken.create({ data });
-    });
+    return await this.model.create({ data });
   }
 
   async update(
     id: bigint,
     data: Prisma.RefreshTokenUpdateInput,
   ): Promise<RefreshToken> {
-    return await this.prisma.$transaction(async (tx) => {
-      return await tx.refreshToken.update({ data, where: { id } });
-    });
+    return await this.model.update({ data, where: { id } });
   }
 
-  async findWhereIpAddressAndDevice(
+  async revokeWhereIpAddressAndDevice(
     userId: bigint,
     ipAddress: string | null,
     deviceInfo: string | null,
-  ): Promise<RefreshToken[]> {
-    return await this.model.findMany({
+  ): Promise<void> {
+    await this.model.updateMany({
+      data: { revoked: true },
       where: { userId, deviceInfo, ipAddress, revoked: false },
     });
   }
@@ -79,11 +72,9 @@ export class AuthRepositoryImpl
     userId: bigint,
     deviceInfo: string | null,
   ): Promise<void> {
-    await this.prisma.$transaction(async (tx) => {
-      await tx.refreshToken.updateMany({
-        data: { revoked: true },
-        where: { userId, deviceInfo },
-      });
+    await this.model.updateMany({
+      data: { revoked: true },
+      where: { userId, deviceInfo, revoked: false },
     });
   }
 }
