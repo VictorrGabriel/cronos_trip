@@ -108,7 +108,7 @@ describe("User routes", () => {
         password: "StrongPass1@",
       };
 
-      prismaMock.user.count.mockResolvedValue(0);
+      prismaMock.user.findUnique.mockResolvedValue(null);
       prismaMock.user.create.mockResolvedValue(
         makeUserRecord({
           publicId: "jane-doe#1234567890",
@@ -159,7 +159,7 @@ describe("User routes", () => {
         password: "StrongPass1@",
       };
 
-      prismaMock.user.count.mockResolvedValue(1);
+      prismaMock.user.findUnique.mockResolvedValue(makeUserRecord());
 
       const response = await request(app)
         .post(baseUrl)
@@ -246,7 +246,6 @@ describe("User routes", () => {
 
     it("should update a user when payload is valid", async () => {
       const accessToken = makeAccessToken(userId);
-      prismaMock.user.count.mockResolvedValue(0);
       prismaMock.user.update.mockResolvedValue(
         makeUserRecord({
           publicId: userId,
@@ -285,7 +284,7 @@ describe("User routes", () => {
 
     it("should return 409 when update email already exists", async () => {
       const accessToken = makeAccessToken(userId);
-      prismaMock.user.count.mockResolvedValue(1);
+      prismaMock.user.findUnique.mockResolvedValue(makeUserRecord());
 
       const response = await request(app)
         .patch(`${baseUrl}/${encodeURIComponent(userId)}`)
