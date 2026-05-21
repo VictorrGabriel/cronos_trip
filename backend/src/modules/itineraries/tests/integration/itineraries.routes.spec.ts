@@ -34,6 +34,10 @@ describe("Itineraries Routes", () => {
     placeApiRef: "place1ref9",
     totalEstimateCents: 1500,
   });
+  const mockItineraryWithTrip = {
+    ...mockItinerary,
+    trip: { publicId: mockTrip.publicId },
+  };
 
   const prismaNotFoundError = new Prisma.PrismaClientKnownRequestError(
     "An operation failed because it depends on one or more records that were required but not found.",
@@ -64,7 +68,7 @@ describe("Itineraries Routes", () => {
 
     it("should return 200 and created itinerary for valid payload", async () => {
       prismaMock.trip.findUnique.mockResolvedValue(mockTrip);
-      prismaMock.itinerary.findFirst.mockResolvedValue(null);
+      prismaMock.itinerary.findUnique.mockResolvedValue(null);
       prismaMock.itinerary.create.mockResolvedValue(mockItinerary);
 
       const response = await request(app)
@@ -119,7 +123,7 @@ describe("Itineraries Routes", () => {
 
     it("should return 400 when trip date is outside range", async () => {
       prismaMock.trip.findUnique.mockResolvedValue(mockTrip);
-      prismaMock.itinerary.findFirst.mockResolvedValue(null);
+      prismaMock.itinerary.findUnique.mockResolvedValue(null);
 
       const response = await request(app)
         .post(`${baseUrl}/${validTripId}`)
@@ -164,8 +168,9 @@ describe("Itineraries Routes", () => {
 
   describe("GET /api/v1/itineraries/:id", () => {
     it("should return 200 and itinerary details when found", async () => {
-      prismaMock.itinerary.findUnique.mockResolvedValue(mockItinerary);
-      prismaMock.trip.findUnique.mockResolvedValue(mockTrip);
+      prismaMock.itinerary.findUnique.mockResolvedValue(
+        mockItineraryWithTrip as never,
+      );
 
       const response = await request(app)
         .get(`${baseUrl}/${validItineraryId}`)
@@ -199,9 +204,8 @@ describe("Itineraries Routes", () => {
       });
     });
 
-    it("should return 404 when linked trip is missing", async () => {
-      prismaMock.itinerary.findUnique.mockResolvedValue(mockItinerary);
-      prismaMock.trip.findUnique.mockResolvedValue(null);
+    it("should return 404 when optimized lookup misses itinerary", async () => {
+      prismaMock.itinerary.findUnique.mockResolvedValue(null);
 
       const response = await request(app)
         .get(`${baseUrl}/${validItineraryId}`)
@@ -209,8 +213,8 @@ describe("Itineraries Routes", () => {
 
       expect(response.status).toBe(404);
       expect(response.body).toEqual({
-        code: "TRIP_NOT_FOUND",
-        message: "Trip not found",
+        code: "ITINERARY_NOT_FOUND",
+        message: "Itinerary not found",
       });
     });
 
@@ -288,7 +292,6 @@ describe("Itineraries Routes", () => {
     it("should return 201 when itinerary updates successfully", async () => {
       prismaMock.itinerary.findUnique.mockResolvedValue(mockItinerary);
       prismaMock.trip.findUnique.mockResolvedValue(mockTrip);
-      prismaMock.itinerary.findFirst.mockResolvedValue(null);
       prismaMock.itinerary.update.mockResolvedValue(mockItinerary);
 
       const response = await request(app)
@@ -345,20 +348,21 @@ describe("Itineraries Routes", () => {
     });
 
     it("should return 400 when the requested day is already taken", async () => {
-      prismaMock.itinerary.findUnique.mockResolvedValue(mockItinerary);
+      prismaMock.itinerary.findUnique
+        .mockResolvedValueOnce(mockItinerary)
+        .mockResolvedValueOnce({
+          id: 2n,
+          publicId: "itinerary-taken-123",
+          dayDate: new Date("2026-06-02"),
+          dailyQuota: 1,
+          status: "PLANNED",
+          totalEstimateCents: 1200,
+          placeApiRef: "place-api-ref-321",
+          notes: "Busy day",
+          createdAt: new Date("2026-05-14T00:00:00.000Z"),
+          tripId: mockTrip.id,
+        });
       prismaMock.trip.findUnique.mockResolvedValue(mockTrip);
-      prismaMock.itinerary.findFirst.mockResolvedValue({
-        id: 2n,
-        publicId: "itinerary-taken-123",
-        dayDate: new Date("2026-06-02"),
-        dailyQuota: 1,
-        status: "PLANNED",
-        totalEstimateCents: 1200,
-        placeApiRef: "place-api-ref-321",
-        notes: "Busy day",
-        createdAt: new Date("2026-05-14T00:00:00.000Z"),
-        tripId: mockTrip.id,
-      });
 
       const response = await request(app)
         .patch(`${baseUrl}/${validTripId}/${validItineraryId}`)
@@ -373,9 +377,10 @@ describe("Itineraries Routes", () => {
     });
 
     it("should return 409 when updating to a date outside trip boundaries", async () => {
-      prismaMock.itinerary.findUnique.mockResolvedValue(mockItinerary);
+      prismaMock.itinerary.findUnique
+        .mockResolvedValueOnce(mockItinerary)
+        .mockResolvedValueOnce(null);
       prismaMock.trip.findUnique.mockResolvedValue(mockTrip);
-      prismaMock.itinerary.findFirst.mockResolvedValue(null);
 
       const response = await request(app)
         .patch(`${baseUrl}/${validTripId}/${validItineraryId}`)
