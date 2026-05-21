@@ -1,7 +1,7 @@
+import { generateRefreshToken } from "@shared/utils";
 import request from "supertest";
 import { mockDeep, mockReset, type DeepMockProxy } from "jest-mock-extended";
 import { PrismaClient } from "@prisma/client";
-import { app } from "@/server";
 import { prisma } from "@lib/prisma";
 import {
   makeUserRecord,
@@ -11,7 +11,6 @@ import {
 } from "@/shared/factories";
 import argon2 from "argon2";
 import jwt from "jsonwebtoken";
-import { generateRefreshToken, verifyRefreshToken } from "@shared/utils";
 
 jest.mock("@lib/prisma", () => ({
   __esModule: true,
@@ -25,6 +24,8 @@ jest.mock("argon2", () => ({
     hash: jest.fn().mockResolvedValue("hashed-token"),
   },
 }));
+
+import { app } from "@/server";
 
 const prismaMock = prisma as unknown as DeepMockProxy<PrismaClient>;
 
