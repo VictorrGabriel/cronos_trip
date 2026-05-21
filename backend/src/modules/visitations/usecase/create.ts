@@ -16,6 +16,7 @@ import {
   ConflictVisitationLimit,
 } from "@shared/errors";
 import type { ItineraryRepository } from "@modules/itineraries/repository.contract";
+import type { Itinerary } from "@prisma/client";
 
 export interface UsecaseCreate {
   (
@@ -25,12 +26,19 @@ export interface UsecaseCreate {
   ): Promise<VisitationResponseDTO>;
 }
 
-export const usecaseCreate: UsecaseCreate = async (
+interface ValidateCreate {
+  (
+    visitationRepository: VisitationRepository,
+    data: VisitationCreateDTO,
+    itinerary: Itinerary | null,
+  ): Promise<Itinerary>;
+}
+
+const validateCreate: ValidateCreate = async (
   visitationRepository,
-  itineraryRepository,
   data,
+  itinerary,
 ) => {
-  const itinerary = await itineraryRepository.findByPublicId(data.itineraryId);
   if (!itinerary) {
     throw new ItineraryNotFoundError();
   }
@@ -75,6 +83,21 @@ export const usecaseCreate: UsecaseCreate = async (
     });
   }
 
+  return itinerary;
+};
+
+export const usecaseCreate: UsecaseCreate = async (
+  visitationRepository,
+  itineraryRepository,
+  data,
+) => {
+  const itinerary = await itineraryRepository.findByPublicId(data.itineraryId);
+  const existingItinerary = await validateCreate(
+    visitationRepository,
+    data,
+    itinerary,
+  );
+
   const baseCreate = pickByKeys(data, [
     "durationMinutes",
     "isVisited",
@@ -88,12 +111,12 @@ export const usecaseCreate: UsecaseCreate = async (
   const visitation = await visitationRepository.create({
     ...baseCreate,
     publicId,
-    itinerary: { connect: { id: itinerary.id } },
+    itinerary: { connect: { id: existingItinerary.id } },
   });
 
   const visitationResponse: VisitationResponseDTO = buildVisitationResponseDTO(
     visitation,
-    itinerary.publicId,
+    existingItinerary.publicId,
   );
 
   return visitationResponse;
