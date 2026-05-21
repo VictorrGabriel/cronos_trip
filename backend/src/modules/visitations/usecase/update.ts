@@ -1,11 +1,12 @@
 import type {
-  VisitationResponseDTO,
   VisitationUpdateDTO,
 } from "@shared/dto/visitation.dto";
-import type { VisitationRepository } from "../repository.contract";
+import type {
+  VisitationRepository,
+  VisitationWithItineraryPublicId,
+} from "../repository.contract";
 import type { ItineraryRepository } from "@modules/itineraries/repository.contract";
 import {
-  ItineraryNotFoundError,
   VisitationNotFoundError,
   InvalidInputError,
 } from "@shared/errors";
@@ -21,21 +22,21 @@ export interface UsecaseUpdate {
   ): Promise<void>;
 }
 
-export const usecaseUpdate: UsecaseUpdate = async (
+interface ValidateUpdate {
+  (
+    visitationRepository: VisitationRepository,
+    currentVisitation: VisitationWithItineraryPublicId | null,
+    data: VisitationUpdateDTO,
+  ): Promise<VisitationWithItineraryPublicId>;
+}
+
+const validateUpdate: ValidateUpdate = async (
   visitationRepository,
-  itineraryRepository,
-  visitationId,
+  currentVisitation,
   data,
 ) => {
-  const currentVisitation = await visitationRepository.findById(visitationId);
   if (!currentVisitation) {
     throw new VisitationNotFoundError();
-  }
-
-  const itinerary = await itineraryRepository.findById(currentVisitation.itineraryId);
-
-  if (!itinerary) {
-    throw new ItineraryNotFoundError();
   }
 
   if (data.visitOrder) {
@@ -44,7 +45,7 @@ export const usecaseUpdate: UsecaseUpdate = async (
       data.visitOrder,
     );
 
-    if (!isValidVisitOrderNumber) {
+    if (!isValidVisitOrderNumber(data.visitOrder)) {
       throw new InvalidInputError({
         message:
           "Visitation must be a positive integer and smaller or equal to 10 and greater than 0",
@@ -58,7 +59,9 @@ export const usecaseUpdate: UsecaseUpdate = async (
     }
   }
 
-  const minutesSum = await visitationRepository.minutesSum(currentVisitation.itineraryId);
+  const minutesSum = await visitationRepository.minutesSum(
+    currentVisitation.itineraryId,
+  );
   const dayMinutes = 24 * 60;
   if (
     minutesSum &&
@@ -70,6 +73,25 @@ export const usecaseUpdate: UsecaseUpdate = async (
     });
   }
 
+  return currentVisitation;
+};
+
+export const usecaseUpdate: UsecaseUpdate = async (
+  visitationRepository,
+  _itineraryRepository,
+  visitationId,
+  data,
+) => {
+  const currentVisitation =
+    await visitationRepository.findByPublicIdWithItineraryPublicId(
+      visitationId,
+    );
+  const existingVisitation = await validateUpdate(
+    visitationRepository,
+    currentVisitation,
+    data,
+  );
+
   const baseUpdate = cleanByAllowedKeys(data, [
     "durationMinutes",
     "isVisited",
@@ -80,5 +102,5 @@ export const usecaseUpdate: UsecaseUpdate = async (
 
   const visitationEntity: Prisma.VisitationUpdateInput = baseUpdate;
 
-  await visitationRepository.update(currentVisitation.id, visitationEntity);
+  await visitationRepository.update(existingVisitation.id, visitationEntity);
 };

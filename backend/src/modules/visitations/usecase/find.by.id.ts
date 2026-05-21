@@ -1,9 +1,9 @@
 import type { VisitationResponseDTO } from "@shared/dto/visitation.dto";
-import type { VisitationRepository } from "../repository.contract";
-import {
-  ItineraryNotFoundError,
-  VisitationNotFoundError,
-} from "@shared/errors";
+import type {
+  VisitationRepository,
+  VisitationWithItineraryPublicId,
+} from "../repository.contract";
+import { VisitationNotFoundError } from "@shared/errors";
 import type { ItineraryRepository } from "@modules/itineraries/repository.contract";
 import { buildVisitationResponseDTO } from "@/shared/utils";
 
@@ -15,25 +15,35 @@ export interface UsecaseFindById {
   ): Promise<VisitationResponseDTO>;
 }
 
-export const usecaseFindById: UsecaseFindById = async (
-  visitationRepository,
-  itinerariesRepository,
-  visitationId,
-) => {
-  const visitation = await visitationRepository.findByPublicId(visitationId);
+interface ValidateFindById {
+  (
+    visitation: VisitationWithItineraryPublicId | null,
+  ): VisitationWithItineraryPublicId;
+}
 
+const validateFindById: ValidateFindById = (visitation) => {
   if (!visitation) {
     throw new VisitationNotFoundError();
   }
-  const itinerary = await itinerariesRepository.findById(
-    visitation.itineraryId,
+
+  return visitation;
+};
+
+export const usecaseFindById: UsecaseFindById = async (
+  visitationRepository,
+  _itinerariesRepository,
+  visitationId,
+) => {
+  const visitation =
+    await visitationRepository.findByPublicIdWithItineraryPublicId(
+      visitationId,
+    );
+  const existingVisitation = validateFindById(visitation);
+
+  const visitationResponse: VisitationResponseDTO = buildVisitationResponseDTO(
+    existingVisitation,
+    existingVisitation.itinerary.publicId,
   );
-  if (!itinerary) {
-    throw new ItineraryNotFoundError();
-  }
-
-
-  const visitationResponse: VisitationResponseDTO = buildVisitationResponseDTO(visitation, itinerary.publicId);
 
   return visitationResponse;
 };
