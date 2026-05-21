@@ -1,6 +1,6 @@
 import { BaseRepositoryImpl } from "@shared/repositories";
 import { PrismaClient, Prisma, type Trip } from "@prisma/client";
-import type { TripRepository } from "./repository.contract";
+import type { TripRepository, TripWithUserPublicId } from "./repository.contract";
 import type { TripDates } from "@shared/types/trip.type";
 
 export class TripRepositoryImpl
@@ -22,11 +22,20 @@ export class TripRepositoryImpl
   }
 
   async findByUserId(userId: bigint): Promise<Trip[]> {
-    return await this.model.findMany({ where: { user: { id: userId } } });
+    return await this.model.findMany({ where: { userId } });
   }
 
- async findByUserPublicId(userId: string): Promise<Trip[]> {
-     return await this.model.findMany({ where: { user: { publicId: userId } } });
+  async findByUserPublicId(userId: string): Promise<Trip[]> {
+    return await this.model.findMany({ where: { user: { publicId: userId } } });
+  }
+
+  async findByPublicIdWithUserPublicId(
+    publicId: string,
+  ): Promise<TripWithUserPublicId | null> {
+    return await this.model.findUnique({
+      include: { user: { select: { publicId: true } } },
+      where: { publicId },
+    });
   }
 
   async findConflictDate(
