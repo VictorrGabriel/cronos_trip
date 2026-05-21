@@ -22,30 +22,25 @@ export class UserRepositoryImpl
     return await this.model.update({ data, where: { publicId: id } });
   }
 
-   async update(
-    id: bigint,
-    data: Prisma.UserUpdateInput,
-  ): Promise<User> {
+  async update(id: bigint, data: Prisma.UserUpdateInput): Promise<User> {
     return await this.model.update({ data, where: { id } });
   }
 
   async existsById(id: bigint): Promise<boolean> {
     return (
-      (await this.model.count({
-        where: {
-          id,
-        },
-      })) > 0
+      (await this.model.findUnique({
+        select: { id: true },
+        where: { id },
+      })) !== null
     );
   }
 
   async existsByEmail(email: string): Promise<boolean> {
     return (
-      (await this.model.count({
-        where: {
-          email,
-        },
-      })) > 0
+      (await this.model.findUnique({
+        select: { id: true },
+        where: { email },
+      })) !== null
     );
   }
 
@@ -54,9 +49,13 @@ export class UserRepositoryImpl
   }
 
   async findPublicId(id: bigint): Promise<string | null> {
-    return (await this.model.findUnique({
-      select: { publicId: true },
-      where: { id },
-    }))?.publicId ?? null;
+    return (
+      (
+        await this.model.findUnique({
+          select: { publicId: true },
+          where: { id },
+        })
+      )?.publicId ?? null
+    );
   }
 }
