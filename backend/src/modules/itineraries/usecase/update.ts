@@ -1,4 +1,4 @@
-﻿import type { ItineraryUpdateDTO, ItineraryResponseDTO } from "@shared/dto/";
+import type { ItineraryUpdateDTO } from "@shared/dto/";
 import { type ItineraryRepository } from "../repository.contract";
 import type { TripRepository } from "@modules/trips/repository.contract";
 import {
@@ -15,7 +15,7 @@ import {
   isValidTotalEstimateCents,
   cleanByAllowedKeys,
 } from "@shared/utils";
-import type { Prisma } from "@prisma/client";
+import type { Itinerary, Prisma, Trip } from "@prisma/client";
 
 export interface UsecaseUpdate {
   (
@@ -26,38 +26,37 @@ export interface UsecaseUpdate {
   ): Promise<void>;
 }
 
-export const usecaseUpdate: UsecaseUpdate = async (
-  itinerariesRepository,
-  tripRepository,
-  itineraryId,
-  data,
-) => {
-  const itinerary = await itinerariesRepository.findByPublicId(itineraryId);
+interface ValidateUpdate {
+  (
+    itinerariesRepository: ItineraryRepository,
+    data: ItineraryUpdateDTO,
+    itinerary: Itinerary | null,
+    trip: Trip | null,
+  ): Promise<{ itinerary: Itinerary; trip: Trip }>;
+}
 
+const validateUpdate: ValidateUpdate = async (
+  itinerariesRepository,
+  data,
+  itinerary,
+  trip,
+) => {
   if (!itinerary) {
     throw new ItineraryNotFoundError();
   }
-
-  const trip = await tripRepository.findById(data.tripId);
 
   if (!trip) {
     throw new TripNotFoundError();
   }
 
   if (data.dayDate) {
-    const isFree = await itinerariesRepository.isFreeDay(
-      itinerary.id,
-      data.dayDate,
-    );
+    const isFree = await itinerariesRepository.isFreeDay(trip.id, data.dayDate);
 
     if (!isFree) {
       throw new InvalidInputError({ message: "This day is not free" });
     }
 
-    if (
-      data.dayDate &&
-      !isValidDayDate(trip.startDate, trip.endDate, data.dayDate)
-    ) {
+    if (!isValidDayDate(trip.startDate, trip.endDate, data.dayDate)) {
       throw new DateOutOfRengeError({
         message: "The Day is outside the range of trip days.",
       });
@@ -94,6 +93,25 @@ export const usecaseUpdate: UsecaseUpdate = async (
     throw new InvalidInputError({ message: "Invalid status" });
   }
 
+  return { itinerary, trip };
+};
+
+export const usecaseUpdate: UsecaseUpdate = async (
+  itinerariesRepository,
+  tripRepository,
+  itineraryId,
+  data,
+) => {
+  const itinerary = await itinerariesRepository.findByPublicId(itineraryId);
+  const trip = await tripRepository.findByPublicId(data.tripId);
+
+  const existingItinerary = await validateUpdate(
+    itinerariesRepository,
+    data,
+    itinerary,
+    trip,
+  );
+
   const baseCreateItinerary = cleanByAllowedKeys(data, [
     "dailyQuota",
     "dayDate",
@@ -104,8 +122,11 @@ export const usecaseUpdate: UsecaseUpdate = async (
 
   const itineraryEntity: Prisma.ItineraryUpdateInput = {
     ...baseCreateItinerary,
-    trip: { connect: { id: trip.id } },
+    trip: { connect: { id: existingItinerary.trip.id } },
   };
 
-  await itinerariesRepository.update(itinerary.id, itineraryEntity);
+  await itinerariesRepository.update(
+    existingItinerary.itinerary.id,
+    itineraryEntity,
+  );
 };

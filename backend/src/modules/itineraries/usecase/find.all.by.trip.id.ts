@@ -1,8 +1,9 @@
-﻿import type { ItineraryResponseDTO } from "@shared/dto/itinerary.dto";
+import type { ItineraryResponseDTO } from "@shared/dto/itinerary.dto";
 import type { ItineraryRepository } from "../repository.contract";
-import { ItineraryNotFoundError, TripNotFoundError } from "@shared/errors";
+import { TripNotFoundError } from "@shared/errors";
 import type { TripRepository } from "@modules/trips/repository.contract";
-import { pickByKeys, buildItineraryResponseDTO } from "@/shared/utils";
+import { buildItineraryResponseDTO } from "@/shared/utils";
+import type { Trip } from "@prisma/client";
 
 export interface UsecaseFindAllByTripId {
   (
@@ -12,24 +13,35 @@ export interface UsecaseFindAllByTripId {
   ): Promise<ItineraryResponseDTO[]>;
 }
 
+interface ValidateFindAllByTripId {
+  (trip: Trip | null): Trip;
+}
+
+const validateFindAllByTripId: ValidateFindAllByTripId = (trip) => {
+  if (!trip) {
+    throw new TripNotFoundError();
+  }
+
+  return trip;
+};
+
 export const usecaseFindAllByTripId: UsecaseFindAllByTripId = async (
   itinerariesRepository,
   tripRepository,
   tripId,
 ) => {
-
   const trip = await tripRepository.findByPublicId(tripId);
+  const existingTrip = validateFindAllByTripId(trip);
 
-  if(!trip){
-    throw new TripNotFoundError();
-  }
-
-  const itineraries = await itinerariesRepository.findByTripId(trip.id);
+  const itineraries = await itinerariesRepository.findByTripId(existingTrip.id);
 
   const itinerariesResponse: ItineraryResponseDTO[] = [];
 
   for (const itinerary of itineraries) {
-    const itineraryResponse: ItineraryResponseDTO = buildItineraryResponseDTO(itinerary, trip.publicId);
+    const itineraryResponse: ItineraryResponseDTO = buildItineraryResponseDTO(
+      itinerary,
+      existingTrip.publicId,
+    );
 
     itinerariesResponse.push(itineraryResponse);
   }

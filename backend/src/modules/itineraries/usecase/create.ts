@@ -16,8 +16,7 @@ import {
   customNanoId,
   buildItineraryResponseDTO,
 } from "@shared/utils";
-import type { Prisma } from "@prisma/client";
-import { tr } from "zod/locales";
+import type { Prisma, Trip } from "@prisma/client";
 
 export interface UsecaseCreate {
   (
@@ -27,16 +26,23 @@ export interface UsecaseCreate {
   ): Promise<ItineraryResponseDTO>;
 }
 
-export const usecaseCreate: UsecaseCreate = async (
-  itinerariesRepository,
-  tripRepository,
-  data,
-) => {
-  const trip = await tripRepository.findByPublicId(data.tripId);
+interface ValidateCreate {
+  (
+    itinerariesRepository: ItineraryRepository,
+    data: ItineraryCreateDTO,
+    trip: Trip | null,
+  ): Promise<Trip>;
+}
 
+const validateCreate: ValidateCreate = async (
+  itinerariesRepository,
+  data,
+  trip,
+) => {
   if (!trip) {
     throw new TripNotFoundError();
   }
+
   const isFreeDay = await itinerariesRepository.isFreeDay(
     trip.id,
     data.dayDate,
@@ -63,7 +69,6 @@ export const usecaseCreate: UsecaseCreate = async (
     });
   }
 
-  /* Simulate forsquare publuc id validation */
   if (!isValidApiReference(data.placeApiRef)) {
     throw new InvalidInputError({ message: "Api reference is invali" });
   }
@@ -78,6 +83,21 @@ export const usecaseCreate: UsecaseCreate = async (
     throw new InvalidInputError({ message: "Invalid status" });
   }
 
+  return trip;
+};
+
+export const usecaseCreate: UsecaseCreate = async (
+  itinerariesRepository,
+  tripRepository,
+  data,
+) => {
+  const trip = await tripRepository.findByPublicId(data.tripId);
+  const existingTrip = await validateCreate(
+    itinerariesRepository,
+    data,
+    trip,
+  );
+
   const baseCreateItinerary = pickByKeys(data, [
     "dailyQuota",
     "dayDate",
@@ -91,12 +111,15 @@ export const usecaseCreate: UsecaseCreate = async (
   const itineraryEntity: Prisma.ItineraryCreateInput = {
     ...baseCreateItinerary,
     publicId,
-    trip: { connect: { id: trip.id } },
+    trip: { connect: { id: existingTrip.id } },
   };
 
   const itinerary = await itinerariesRepository.create(itineraryEntity);
 
-  const itineraryResponse: ItineraryResponseDTO = buildItineraryResponseDTO(itinerary, trip.publicId);
+  const itineraryResponse: ItineraryResponseDTO = buildItineraryResponseDTO(
+    itinerary,
+    existingTrip.publicId,
+  );
 
   return itineraryResponse;
 };
