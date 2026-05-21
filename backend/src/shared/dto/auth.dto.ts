@@ -1,21 +1,22 @@
 import type {
-  AuthLoginSchema,
-  AuthUpdatePasswordSchema,
+  AuthLoginInput,
+  AuthUpdatePasswordInput,
+  AuthTokenInput
 } from "@modules/auths/schemas";
 import type { RefreshToken } from "@prisma/client";
 
-export type AuthLoginDTO = AuthLoginSchema & {
+export type LoginAuthDTO = AuthLoginInput & {
   ipAddress: string | null;
   deviceInfo: string | null;
 };
 
-export type AuthUpdatePasswordDTO = AuthUpdatePasswordSchema;
+export type UpdatePasswordAuthDTO = AuthUpdatePasswordInput;
 
-export type AuthLogoutDTO = Pick<RefreshToken, "deviceInfo" >;
+export type LogoutAuthDTO = Pick<RefreshToken, "deviceInfo" >;
 
-export type AuthResponseDTO = Pick<
+export type ResponseAuthDTO = Pick<
   RefreshToken,
   "expiresAt" | "createdAt"
 > & { token: string; accessToken: string };
 
-export type AuthRefreshDTO = Pick<RefreshToken, "deviceInfo" > & {refreshToken: string | undefined};
+export type RefreshAuthDTO = Pick<RefreshToken, "deviceInfo" > & {refreshToken: string | undefined};

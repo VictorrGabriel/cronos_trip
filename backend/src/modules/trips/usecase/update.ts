@@ -1,6 +1,6 @@
-import type { UpdateTripDTO } from "@shared/dto/trip.dto";
+import type { TripUpdateDTO } from "@shared/dto/trip.dto";
 import type { TripRepository } from "../repository.contract";
-import { ProgressStatus, Prisma } from "@prisma/client";
+import { ProgressStatus, Prisma, type Trip } from "@prisma/client";
 import {
   cleanByAllowedKeys,
   toTimezoneMidnight,
@@ -17,13 +17,13 @@ import {
 export interface UsecaseUpdate {
   (
     tripRepository: TripRepository,
-    data: UpdateTripDTO,
+    data: TripUpdateDTO,
     id: string,
   ): Promise<void>;
 }
 
 const shouldThrowInvalidDateRange = (
-  data: UpdateTripDTO,
+  data: TripUpdateDTO,
   currentStartDate: Date,
   currentEndDate: Date,
 ): boolean => {
@@ -42,12 +42,19 @@ const shouldThrowInvalidDateRange = (
   return false;
 };
 
-export const usecaseUpdate: UsecaseUpdate = async (
-  tripRepository: TripRepository,
-  data: UpdateTripDTO,
-  id: string,
+interface ValidateUpdate {
+  (
+    tripRepository: TripRepository,
+    data: TripUpdateDTO,
+    currentTrip: Trip | null,
+  ): Promise<Trip>;
+}
+
+const validateUpdate: ValidateUpdate = async (
+  tripRepository,
+  data,
+  currentTrip,
 ) => {
-  const currentTrip = await tripRepository.findByPublicId(id);
   if (!currentTrip) {
     throw new TripNotFoundError();
   }
@@ -114,6 +121,17 @@ export const usecaseUpdate: UsecaseUpdate = async (
     });
   }
 
+  return currentTrip;
+};
+
+export const usecaseUpdate: UsecaseUpdate = async (
+  tripRepository: TripRepository,
+  data: TripUpdateDTO,
+  id: string,
+) => {
+  const currentTrip = await tripRepository.findByPublicId(id);
+  const trip = await validateUpdate(tripRepository, data, currentTrip);
+
   const updateSource = {
     name: data.name,
     startDate: data.startDate,
@@ -135,5 +153,5 @@ export const usecaseUpdate: UsecaseUpdate = async (
     updateSource,
     allowedKeys,
   );
-  await tripRepository.update(currentTrip.id, tripEntity);
+  await tripRepository.update(trip.id, tripEntity);
 };

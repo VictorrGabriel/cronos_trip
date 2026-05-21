@@ -1,9 +1,9 @@
-import type { ResponseTripDTO } from "@shared/dto/trip.dto";
+import type { TripResponseDTO } from "@shared/dto/trip.dto";
 import type { TripRepository } from "../repository.contract";
-import { buildTripResponseDTO, pickByKeys } from "@shared/utils";
+import { buildTripResponseDTO } from "@shared/utils";
 
 export interface UsecaseFindByUserId {
-  (tripRepository: TripRepository, userId: string): Promise<ResponseTripDTO[]>;
+  (tripRepository: TripRepository, userId: string): Promise<TripResponseDTO[]>;
 }
 
 export const usecaseFindByUserId: UsecaseFindByUserId = async (
@@ -12,10 +12,10 @@ export const usecaseFindByUserId: UsecaseFindByUserId = async (
 ) => {
   const trips = await tripRepository.findByUserPublicId(userId);
 
-  const responseTripList: ResponseTripDTO[] = [];
+  const responseTripList: TripResponseDTO[] = [];
 
   for (const trip of trips) {
-    const responseTrip: ResponseTripDTO = buildTripResponseDTO(trip, userId);
+    const responseTrip: TripResponseDTO = buildTripResponseDTO(trip, userId);
     responseTripList.push(responseTrip);
   }
 

@@ -1,60 +1,54 @@
-import type { AuthResponseDTO, AuthLoginDTO } from "@shared/dto";
+import type { ResponseAuthDTO, LoginAuthDTO } from "@shared/dto/auth.dto";
+import type { AuthRepository } from "../repository.contract";
+import type { UserRepository } from "@modules/users/repository.contract";
+import argon2 from "argon2";
+import { pickByKeys } from "@shared/utils";
+import type { Prisma } from "@prisma/client";
 import {
-  pickByKeys,
   generateAccessToken,
   generateRefreshToken,
-} from "@shared/utils";
+} from "@shared/utils/auth.helper";
 import { InvalidCredentialsError } from "@shared/errors";
-import type { UserRepository } from "@modules/users/repository.contract";
-import type { AuthRepository } from "../repository.contract";
-import type { Prisma, User } from "@prisma/client";
-import argon2 from "argon2";
 
-interface ValidateLogin {
-  (data: AuthLoginDTO, user: User | null): Promise<User>;
+export interface UsecaseLogin {
+  (
+    authRepository: AuthRepository,
+    userRepository: UserRepository,
+    data: LoginAuthDTO,
+  ): Promise<ResponseAuthDTO>;
 }
 
-const validateLogin: ValidateLogin = async (data, user) => {
+export const usecaseLogin: UsecaseLogin = async (
+  authRepository: AuthRepository,
+  userRepository: UserRepository,
+  data: LoginAuthDTO,
+) => {
+  const user = await userRepository.findByEmail(data.email);
   if (!user) {
     throw new InvalidCredentialsError();
+  }
+
+  const tokensUnrevokedByIpAddress =
+    await authRepository.findWhereIpAddressAndDevice(
+      user.id,
+      data.ipAddress,
+      data.deviceInfo,
+    );
+
+  for (const refreshToken of tokensUnrevokedByIpAddress) {
+    await authRepository.revokedById(refreshToken.id);
   }
 
   const { passwordHash } = user;
 
   const isValidPassword = await argon2.verify(passwordHash, data.password);
 
+  
   if (!isValidPassword) {
     throw new InvalidCredentialsError();
   }
-
-  return user;
-};
-
-
-export interface UsecaseLogin {
-  (
-    authRepository: AuthRepository,
-    userRepository: UserRepository,
-    data: AuthLoginDTO,
-  ): Promise<AuthResponseDTO>;
-}
-
-export const usecaseLogin: UsecaseLogin = async (
-  authRepository: AuthRepository,
-  userRepository: UserRepository,
-  data: AuthLoginDTO,
-) => {
-  const user = await userRepository.findByEmail(data.email);
-
-  const existingUser = await validateLogin(data, user);
-
-  await authRepository.revokeWhereIpAddressAndDevice(
-    existingUser.id,
-    data.ipAddress,
-    data.deviceInfo,
-  );
-
-  const token = generateRefreshToken(existingUser.publicId);
+  
+  const token = generateRefreshToken(String(user.id));
   const tokenHash = await argon2.hash(token);
 
   const createdBase = pickByKeys(data, ["deviceInfo", "ipAddress"]);
@@ -62,16 +56,13 @@ export const usecaseLogin: UsecaseLogin = async (
   const entity: Prisma.RefreshTokenCreateInput = {
     ...createdBase,
     tokenHash,
-    user: { connect: { id: existingUser.id } },
+    user: { connect: { id: user.id } },
   };
 
   const refreshToken = await authRepository.create(entity);
-  const accessToken = generateAccessToken(
-    existingUser.publicId,
-    existingUser.role,
-  );
+  const accessToken = generateAccessToken(user.publicId, user.role);
 
-  const authResponse: AuthResponseDTO = pickByKeys(
+  const authResponse: ResponseAuthDTO = pickByKeys(
     { ...refreshToken, token, accessToken },
     ["token", "accessToken", "expiresAt", "createdAt"],
   );

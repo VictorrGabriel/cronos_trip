@@ -106,8 +106,10 @@ describe("Trips Routes", () => {
 
   describe("GET /api/v1/trips/:id", () => {
     it("should return 200 and trip details for valid id", async () => {
-      prismaMock.trip.findUnique.mockResolvedValue(mockTrip);
-      prismaMock.user.findUnique.mockResolvedValue(mockUser);
+      prismaMock.trip.findUnique.mockResolvedValue({
+        ...mockTrip,
+        user: { publicId: mockUser.publicId },
+      } as never);
 
       const response = await request(app)
         .get(`${baseUrl}/${validTripId}`)

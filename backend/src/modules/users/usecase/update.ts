@@ -1,42 +1,32 @@
 ﻿import type { UserRepository } from "../repository.contract";
-import type { UserUpdateDTO } from "@shared/dto";
+import type { UpdateUserDTO } from "@shared/dto/user.dto";
+import { userUpdateSchema } from "../schemas";
 import { cleanByAllowedKeys } from "@shared/utils";
 import { EmailConflictError } from "@shared/errors";
-import type { Prisma } from "@prisma/client";
-
-interface ValidateUpdate {
-  (data: UserUpdateDTO, existingEmail: boolean): void;
-}
-
-export const validateUpdate: ValidateUpdate = (data, existingEmail) => {
-  if (existingEmail) {
-    throw new EmailConflictError();
-  }
-};
 
 export interface UsecaseUpdate {
   (
     userRepository: UserRepository,
-    data: UserUpdateDTO,
+    data: UpdateUserDTO,
     publicId: string,
   ): Promise<void>;
 }
 
 export const usecaseUpdate: UsecaseUpdate = async (
   userRepository: UserRepository,
-  data: UserUpdateDTO,
+  data: UpdateUserDTO,
   publicId: string,
 ) => {
   const existingEmail = data.email
     ? await userRepository.existsByEmail(data.email)
     : false;
 
-  validateUpdate(data, existingEmail);
+  if (existingEmail) {
+    throw new EmailConflictError({
+      message: `Email ${data.email} already exists`,
+    });
+  }
 
-  const entityUpdate: Prisma.UserUpdateInput = cleanByAllowedKeys(data, [
-    "email",
-    "name",
-  ]);
-
-  await userRepository.updateByPublicId(publicId, entityUpdate);
+  const entity = cleanByAllowedKeys(data, ["email", "name"]);
+  await userRepository.updateByPublicId(publicId, entity);
 };

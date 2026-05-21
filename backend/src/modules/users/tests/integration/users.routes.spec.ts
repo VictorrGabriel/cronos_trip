@@ -65,13 +65,13 @@ describe("User routes", () => {
             id: "alice#0000000001",
             name: "Alice",
             email: "john.doe@example.com",
-            role: "USER",
+            role: "USER"
           }),
           expect.objectContaining({
             id: "bob#0000000002",
             name: "Bob",
             email: "john.doe@example.com",
-            role: "USER",
+            role: "USER"
           }),
           {
             id: adminUser.publicId,
@@ -168,7 +168,7 @@ describe("User routes", () => {
         .expect(409);
 
       expect(response.body).toEqual({
-        message: "Email already exists",
+        message: `Email ${payload.email} already exists`,
         code: "EMAIL_CONFLICT",
       });
     });
@@ -295,7 +295,7 @@ describe("User routes", () => {
         .expect(409);
 
       expect(response.body).toEqual({
-        message: "Email already exists",
+        message: "Email existing@example.com already exists",
         code: "EMAIL_CONFLICT",
       });
     });

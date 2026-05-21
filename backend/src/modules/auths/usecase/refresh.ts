@@ -1,4 +1,4 @@
-import type { AuthRefreshDTO } from "@shared/dto/auth.dto";
+import type { RefreshAuthDTO } from "@shared/dto/auth.dto";
 import type { AuthRepository } from "../repository.contract";
 import argon2 from "argon2";
 import {
@@ -8,25 +8,26 @@ import {
 import { InvalidTokenError, UserNotFoundError } from "@shared/errors";
 import type { UserRepository } from "@/modules/users/repository.contract";
 import jwt from "jsonwebtoken";
-import type { User } from "@prisma/client";
 
-interface ValidateRefresh {
+export interface UsecaseRefresh {
   (
     authRepository: AuthRepository,
-    user: User | null,
-    data: AuthRefreshDTO,
-  ): Promise<User>;
+    userRepository: UserRepository,
+    userId: string,
+    data: RefreshAuthDTO,
+  ): Promise<string>;
 }
 
-const validateRefresh: ValidateRefresh = async (
+export const usecaseRefresh: UsecaseRefresh = async (
   authRepository,
-  user,
+  userRepository,
+  userId,
   data,
 ) => {
+    const user = await userRepository.findByPublicId(userId);
   if (!user) {
     throw new UserNotFoundError();
   }
-
   if (!data.refreshToken) {
     throw new InvalidTokenError({ message: "Missing refresh token" });
   }
@@ -34,16 +35,13 @@ const validateRefresh: ValidateRefresh = async (
   try {
     verifyRefreshToken(data.refreshToken);
   } catch (err) {
-    if (err instanceof jwt.JsonWebTokenError) {
-      await authRepository.revokedAllByUserId(user.id);
+    if(err instanceof jwt.JsonWebTokenError){
+      await authRepository.revokedAllByUserId(user.id)
     }
     throw err;
   }
 
-  const refreshToken = await authRepository.findLatestUnrevoked(
-    user.id,
-    data.deviceInfo,
-  );
+  const refreshToken = await authRepository.findLatestUnrevoked(user.id, data.deviceInfo);
 
   if (!refreshToken) {
     throw new InvalidTokenError({ message: "Refresh token not found" });
@@ -65,31 +63,7 @@ const validateRefresh: ValidateRefresh = async (
     throw new InvalidTokenError({ message: "Refresh token revoked" });
   }
 
-  return user;
-};
-
-export interface UsecaseRefresh {
-  (
-    authRepository: AuthRepository,
-    userRepository: UserRepository,
-    userId: string,
-    data: AuthRefreshDTO,
-  ): Promise<string>;
-}
-
-export const usecaseRefresh: UsecaseRefresh = async (
-  authRepository,
-  userRepository,
-  userId,
-  data,
-) => {
-  const user = await userRepository.findByPublicId(userId);
-  const existingUser = await validateRefresh(authRepository, user, data);
-
-  const accessToken = generateAccessToken(
-    existingUser.publicId,
-    existingUser.role,
-  );
+  const accessToken = generateAccessToken(user.publicId, user.role);
 
   return accessToken;
 };
