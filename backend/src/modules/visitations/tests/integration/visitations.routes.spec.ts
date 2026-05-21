@@ -53,6 +53,10 @@ describe("Visitation Routes", () => {
     publicId: visitationPublicId,
     itineraryId: 1n,
   });
+  const mockVisitationWithItinerary = {
+    ...mockVisitation,
+    itinerary: { publicId: itineraryPublicId },
+  } as never;
 
   describe("POST /api/v1/visitations/:itineraryId - Create Visitation", () => {
     it("should create a visitation successfully with all valid fields", async () => {
@@ -66,7 +70,7 @@ describe("Visitation Routes", () => {
 
       prismaMock.itinerary.findUnique.mockResolvedValue(mockItinerary);
       prismaMock.visitation.count.mockResolvedValue(0);
-      prismaMock.visitation.findFirst.mockResolvedValue(null);
+      prismaMock.visitation.findUnique.mockResolvedValue(null);
       prismaMock.visitation.aggregate.mockResolvedValue({
         _sum: { durationMinutes: null },
       } as any);
@@ -437,7 +441,7 @@ describe("Visitation Routes", () => {
 
       prismaMock.itinerary.findUnique.mockResolvedValue(mockItinerary);
       prismaMock.visitation.count.mockResolvedValue(1);
-      prismaMock.visitation.findFirst.mockResolvedValue(existingVisitation);
+      prismaMock.visitation.findUnique.mockResolvedValue(existingVisitation);
 
       const response = await request(app)
         .post(`${baseUrl}/${itineraryPublicId}`)
@@ -462,7 +466,7 @@ describe("Visitation Routes", () => {
 
       prismaMock.itinerary.findUnique.mockResolvedValue(mockItinerary);
       prismaMock.visitation.count.mockResolvedValue(1);
-      prismaMock.visitation.findFirst.mockResolvedValue(null);
+      prismaMock.visitation.findUnique.mockResolvedValue(null);
       prismaMock.visitation.aggregate.mockResolvedValue({
         _sum: { durationMinutes: 1437 }, // 24 * 60 - 3 = 1437
       } as any);
@@ -488,8 +492,9 @@ describe("Visitation Routes", () => {
         isVisited: true,
       };
 
-      prismaMock.visitation.findUnique.mockResolvedValueOnce(mockVisitation);
-      prismaMock.itinerary.findUnique.mockResolvedValue(mockItinerary);
+      prismaMock.visitation.findUnique.mockResolvedValueOnce(
+        mockVisitationWithItinerary,
+      );
       prismaMock.visitation.aggregate.mockResolvedValue({
         _sum: { durationMinutes: 60 },
       } as any);
@@ -519,8 +524,9 @@ describe("Visitation Routes", () => {
         isVisited: true,
       };
 
-      prismaMock.visitation.findUnique.mockResolvedValue(mockVisitation);
-      prismaMock.itinerary.findUnique.mockResolvedValue(mockItinerary);
+      prismaMock.visitation.findUnique.mockResolvedValue(
+        mockVisitationWithItinerary,
+      );
       prismaMock.visitation.aggregate.mockResolvedValue({
         _sum: { durationMinutes: 150 },
       } as any);
@@ -580,7 +586,9 @@ describe("Visitation Routes", () => {
     it("should return 400 when no fields are provided for update", async () => {
       const payload = {};
 
-      prismaMock.visitation.findUnique.mockResolvedValueOnce(mockVisitation);
+      prismaMock.visitation.findUnique.mockResolvedValueOnce(
+        mockVisitationWithItinerary,
+      );
 
       const response = await request(app)
         .patch(`${baseUrl}/${visitationPublicId}`)
@@ -681,13 +689,12 @@ describe("Visitation Routes", () => {
       });
     });
 
-    it("should return 404 when associated itinerary is not found", async () => {
+    it("should return 404 when visitation is not found by optimized lookup", async () => {
       const payload = {
         isVisited: true,
       };
 
-      prismaMock.visitation.findUnique.mockResolvedValueOnce(mockVisitation);
-      prismaMock.itinerary.findUnique.mockResolvedValue(null);
+      prismaMock.visitation.findUnique.mockResolvedValue(null);
 
       const response = await request(app)
         .patch(`${baseUrl}/${visitationPublicId}`)
@@ -696,8 +703,8 @@ describe("Visitation Routes", () => {
         .expect(404);
 
       expect(response.body).toEqual({
-        code: "ITINERARY_NOT_FOUND",
-        message: "Itinerary not found",
+        code: "VISITATION_NOT_FOUND",
+        message: "Visitation not found",
       });
     });
   });
@@ -713,9 +720,9 @@ describe("Visitation Routes", () => {
       visitOrder: 5,
     });
 
-    prismaMock.visitation.findUnique.mockResolvedValue(mockVisitation);
-    prismaMock.itinerary.findUnique.mockResolvedValue(mockItinerary);
-    prismaMock.visitation.findFirst.mockResolvedValue(anotherVisitation);
+    prismaMock.visitation.findUnique
+      .mockResolvedValueOnce(mockVisitationWithItinerary)
+      .mockResolvedValueOnce(anotherVisitation);
 
     const response = await request(app)
       .patch(`${baseUrl}/${visitationPublicId}`)
@@ -823,8 +830,9 @@ describe("Visitation Routes", () => {
 
   describe("GET /api/v1/visitations/:id - Find Visitation by ID", () => {
     it("should return a visitation by its ID", async () => {
-      prismaMock.visitation.findUnique.mockResolvedValue(mockVisitation);
-      prismaMock.itinerary.findUnique.mockResolvedValue(mockItinerary);
+      prismaMock.visitation.findUnique.mockResolvedValue(
+        mockVisitationWithItinerary,
+      );
 
       const response = await request(app)
         .get(`${baseUrl}/${visitationPublicId}`)
@@ -882,9 +890,8 @@ describe("Visitation Routes", () => {
       });
     });
 
-    it("should return 404 when associated itinerary is not found", async () => {
-      prismaMock.visitation.findUnique.mockResolvedValue(mockVisitation);
-      prismaMock.itinerary.findUnique.mockResolvedValue(null);
+    it("should return 404 when visitation is not found by optimized lookup", async () => {
+      prismaMock.visitation.findUnique.mockResolvedValue(null);
 
       const response = await request(app)
         .get(`${baseUrl}/${visitationPublicId}`)
@@ -892,8 +899,8 @@ describe("Visitation Routes", () => {
         .expect(404);
 
       expect(response.body).toEqual({
-        code: "ITINERARY_NOT_FOUND",
-        message: "Itinerary not found",
+        code: "VISITATION_NOT_FOUND",
+        message: "Visitation not found",
       });
     });
   });
