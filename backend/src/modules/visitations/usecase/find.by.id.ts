@@ -5,7 +5,7 @@ import type {
 } from "../repository.contract";
 import { VisitationNotFoundError } from "@shared/errors";
 import type { ItineraryRepository } from "@modules/itineraries/repository.contract";
-import { buildVisitationResponseDTO } from "@/shared/utils";
+import { buildVisitationResponseDTO } from "@/shared/dto";
 
 export interface UsecaseFindById {
   (

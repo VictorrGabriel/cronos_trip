@@ -1,6 +1,6 @@
 import type {
   VisitationUpdateDTO,
-} from "@shared/dto/visitation.dto";
+} from "@shared/dto";
 import type {
   VisitationRepository,
   VisitationWithItineraryPublicId,
