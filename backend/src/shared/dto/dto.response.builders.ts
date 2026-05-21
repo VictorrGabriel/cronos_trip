@@ -5,7 +5,7 @@ import type {
   VisitationResponseDTO,
   ResponseUserDTO
 } from "@shared/dto";
-import { pickByKeys } from "./object.helper";
+import { pickByKeys } from "../utils";
 
 export const buildItineraryResponseDTO = (
   itinerary: Itinerary,

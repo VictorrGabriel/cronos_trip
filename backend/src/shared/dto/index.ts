@@ -14,3 +14,4 @@ export type {
   ItineraryUpdateDTO,
 } from "./itinerary.dto";
 export type { VisitationCreateDTO, VisitationResponseDTO, VisitationUpdateDTO} from "./visitation.dto"
+export { buildItineraryResponseDTO, buildTripResponseDTO, buildVisitationResponseDTO} from "./dto.response.builders";
