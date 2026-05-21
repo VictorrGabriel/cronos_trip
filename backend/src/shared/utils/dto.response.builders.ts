@@ -1,7 +1,7 @@
 import type { Itinerary, Trip, User, Visitation } from "@prisma/client";
 import type {
   ItineraryResponseDTO,
-  ResponseTripDTO,
+  TripResponseDTO,
   VisitationResponseDTO,
   ResponseUserDTO
 } from "@shared/dto";
@@ -33,7 +33,7 @@ export const buildItineraryResponseDTO = (
 export const buildTripResponseDTO = (
   trip: Trip,
   userId: string,
-): ResponseTripDTO => {
+): TripResponseDTO => {
   const BaseReponseDTO = pickByKeys({ ...trip }, [
     "id",
     "userId",
@@ -45,7 +45,7 @@ export const buildTripResponseDTO = (
     "createdAt",
   ]);
 
-  const tripResponse: ResponseTripDTO = {
+  const tripResponse: TripResponseDTO = {
     ...BaseReponseDTO,
     id: trip.publicId,
     userId,

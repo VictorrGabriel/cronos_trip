@@ -1,7 +1,7 @@
 import type { TripRepository } from "../repository.contract";
 import type { UserRepository } from "@modules/users/repository.contract";
-import type { CreateTripDTO, ResponseTripDTO } from "@shared/dto/trip.dto";
-import { Prisma } from "@prisma/client";
+import type { TripCreateDTO, TripResponseDTO } from "@shared/dto/trip.dto";
+import { Prisma, ProgressStatus, type User } from "@prisma/client";
 import {
   pickByKeys,
   toTimezoneMidnight,
@@ -21,25 +21,26 @@ export interface UsecaseCreate {
   (
     tripRepository: TripRepository,
     userRepository: UserRepository,
-    data: CreateTripDTO,
-  ): Promise<ResponseTripDTO>;
+    data: TripCreateDTO,
+  ): Promise<TripResponseDTO>;
 }
 
-export const usecaseCreate: UsecaseCreate = async (
-  tripRepository: TripRepository,
-  userRepository: UserRepository,
-  data: CreateTripDTO,
-) => {
-  const existingUser = await userRepository.findByPublicId(data.userId);
+interface ValidateCreate {
+  (
+    tripRepository: TripRepository,
+    data: TripCreateDTO,
+    existingUser: User | null,
+  ): Promise<User>;
+}
 
+const validateCreate: ValidateCreate = async (
+  tripRepository,
+  data,
+  existingUser,
+) => {
   if (!existingUser) {
     throw new UserNotFoundError();
   }
-
-  const startDateInTimezone = toTimezoneMidnight(data.startDate, data.timezone);
-  const nowTimezone = toTimezoneMidnight(new Date(), data.timezone);
-  const startDateTimestamp = data.startDate.getTime();
-  const endDateTimestamp = data.endDate.getTime();
 
   const conflictDates = await tripRepository.findConflictDate(
     existingUser.id,
@@ -63,6 +64,11 @@ export const usecaseCreate: UsecaseCreate = async (
     });
   }
 
+  const startDateInTimezone = toTimezoneMidnight(data.startDate, data.timezone);
+  const nowTimezone = toTimezoneMidnight(new Date(), data.timezone);
+  const startDateTimestamp = data.startDate.getTime();
+  const endDateTimestamp = data.endDate.getTime();
+
   if (startDateInTimezone < nowTimezone) {
     throw new InvalidTripDateError({
       message: "Trip must start in the present or future",
@@ -81,6 +87,17 @@ export const usecaseCreate: UsecaseCreate = async (
     });
   }
 
+  return existingUser;
+};
+
+export const usecaseCreate: UsecaseCreate = async (
+  tripRepository: TripRepository,
+  userRepository: UserRepository,
+  data: TripCreateDTO,
+) => {
+  const existingUser = await userRepository.findByPublicId(data.userId);
+  const user = await validateCreate(tripRepository, data, existingUser);
+
   const publicId = normalizeString(data.name) + "#" + customNanoId(10);
 
   const baseCreateData = pickByKeys(data, [
@@ -93,14 +110,14 @@ export const usecaseCreate: UsecaseCreate = async (
 
   const tripEntity: Prisma.TripCreateInput = {
     ...baseCreateData,
-    status: data.status,
+    status: data.status as ProgressStatus,
     publicId,
-    user: { connect: { id: existingUser.id } },
+    user: { connect: { id: user.id } },
   };
 
   const trip = await tripRepository.create(tripEntity);
 
-  const responseTrip: ResponseTripDTO = buildTripResponseDTO(trip, data.userId);
+  const responseTrip: TripResponseDTO = buildTripResponseDTO(trip, data.userId);
 
   return responseTrip;
 };
