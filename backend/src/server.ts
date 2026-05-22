@@ -1,12 +1,12 @@
 import express from "express";
 import "dotenv/config";
-import { userRouter } from "@modules/users/routes";
-import { tripRouter } from "@modules/trips/routes";
-import { authRouter } from "@modules/auths/routes";
+import { userRouter } from "@/modules/user/routes";
+import { tripRouter } from "@/modules/trip/routes";
+import { authRouter } from "@/modules/auth/routes";
 import { globalErrorHandler } from "@shared/middlewares/index";
 import cookieParser from "cookie-parser";
-import { itineraryRouter } from "@modules/itineraries/routes";
-import { visitationRouter } from "@modules/visitations/routes";
+import { itineraryRouter } from "@/modules/itinerary/routes";
+import { visitationRouter } from "@/modules/visitation/routes";
 const API_PATH = "/api/v1";
 
 const app = express();

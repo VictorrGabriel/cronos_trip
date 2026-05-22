@@ -1,7 +1,7 @@
 import type {
   ItineraryCreateInput,
   ItineraryUpdateInput,
-} from "@modules/itineraries/schemas";
+} from "@/modules/itinerary/schemas";
 import type { Itinerary } from "@prisma/client";
 
 export type ItineraryCreateDTO = ItineraryCreateInput & { tripId: string };

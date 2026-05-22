@@ -8,7 +8,7 @@ import type {
 import type { TripRepository } from "./repository.contract";
 import type { HttpResponse, HttpRequest } from "@shared/types";
 import type { TripCreateDTO, TripUpdateDTO } from "@shared/dto/trip.dto";
-import type { UserRepository } from "@modules/users/repository.contract";
+import type { UserRepository } from "@/modules/user/repository.contract";
 
 export const ControllerFindByUserId =
   (tripRepository: TripRepository, findByUserId: UsecaseFindByUserId) =>

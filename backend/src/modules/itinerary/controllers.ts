@@ -1,6 +1,6 @@
 import type { HttpRequest, HttpResponse } from "@shared/types";
 import type { ItineraryRepository } from "./repository.contract";
-import type { TripRepository } from "@modules/trips/repository.contract";
+import type { TripRepository } from "@/modules/trip/repository.contract";
 import type {
   UsecaseCreate,
   UsecaseDelete,

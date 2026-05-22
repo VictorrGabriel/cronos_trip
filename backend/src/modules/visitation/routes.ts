@@ -1,5 +1,5 @@
 import { prisma } from "@lib/prisma";
-import { ItineraryRepositoryImpl } from "@modules/itineraries/repository";
+import { ItineraryRepositoryImpl } from "@/modules/itinerary/repository";
 import { Router } from "express";
 import { VisitationRepositoryImpl } from "./repository";
 import { auth, validateIdParam, validateSchema } from "@shared/middlewares/";

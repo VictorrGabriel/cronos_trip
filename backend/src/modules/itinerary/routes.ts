@@ -20,7 +20,7 @@ import {
 } from "@shared/middlewares/index";
 import { ItineraryRepositoryImpl } from "./repository";
 import { prisma } from "@lib/prisma";
-import { TripRepositoryImpl } from "@modules/trips/repository";
+import { TripRepositoryImpl } from "@/modules/trip/repository";
 import { itineraryCreateSchema, itineraryUpdateSchema } from "./schemas";
 
 const itinerariesRepository = new ItineraryRepositoryImpl(prisma);

@@ -16,8 +16,8 @@ import {
 import { prisma } from "@lib/prisma";
 import type { TripRepository } from "./repository.contract";
 import { TripRepositoryImpl } from "./repository";
-import type { UserRepository } from "@modules/users/repository.contract";
-import { UserRepositoryImpl } from "@modules/users/repository";
+import type { UserRepository } from "@/modules/user/repository.contract";
+import { UserRepositoryImpl } from "@/modules/user/repository";
 import {
   validateIdParam,
   validateSchema,

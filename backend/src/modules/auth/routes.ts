@@ -19,8 +19,8 @@ import {
 } from "./controllers";
 import type { AuthRepository } from "./repository.contract";
 import { AuthRepositoryImpl } from "./repository";
-import type { UserRepository } from "@modules/users/repository.contract";
-import { UserRepositoryImpl } from "@modules/users/repository";
+import type { UserRepository } from "@/modules/user/repository.contract";
+import { UserRepositoryImpl } from "@/modules/user/repository";
 import { prisma } from "@lib/prisma";
 
 const router = Router();

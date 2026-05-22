@@ -7,7 +7,7 @@ import type {
   AuthLogoutDTO,
 } from "@shared/dto/index";
 import type { AuthLoginSchema } from "./schemas";
-import type { UserRepository } from "@modules/users/repository.contract";
+import type { UserRepository } from "@/modules/user/repository.contract";
 import type {
   UsecaseRefresh,
   UsecaseLogin,

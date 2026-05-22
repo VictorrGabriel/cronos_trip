@@ -1,4 +1,4 @@
-import type { UserCreateSchema, UserUpdateSchema } from "@modules/users/schemas";
+import type { UserCreateSchema, UserUpdateSchema } from "@/modules/user/schemas";
 
 export type UserCreateDTO = UserCreateSchema;
 export type UserUpdateDTO = UserUpdateSchema;
