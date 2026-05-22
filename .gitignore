@@ -71,3 +71,7 @@ Thumbs.db
 
 # Prisma generated artifacts
 /backend/generated/prisma
+
+# Documentation
+*/docs
+/docs/

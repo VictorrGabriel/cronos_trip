@@ -1,4 +1,4 @@
-import type { TripCreateInput, TripUpdateInput } from "@modules/trips/schemas";
+import type { TripCreateInput, TripUpdateInput } from "@/modules/trip/schemas";
 import type { Trip } from "@prisma/client";
 
 export type TripCreateDTO = TripCreateInput & { userId: string };

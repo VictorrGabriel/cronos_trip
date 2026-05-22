@@ -1,7 +1,7 @@
 import type {
   VisitationCreateInput,
   VisitationUpdateInput,
-} from "@modules/visitations/schemas";
+} from "@/modules/visitation/schemas";
 import type { Visitation } from "@prisma/client";
 
 export type VisitationCreateDTO = VisitationCreateInput & {

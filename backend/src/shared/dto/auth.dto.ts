@@ -1,7 +1,7 @@
 import type {
   AuthLoginSchema,
   AuthUpdatePasswordSchema,
-} from "@modules/auths/schemas";
+} from "@/modules/auth/schemas";
 import type { RefreshToken } from "@prisma/client";
 
 export type AuthLoginDTO = AuthLoginSchema & {
