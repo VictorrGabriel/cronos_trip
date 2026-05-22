@@ -27,6 +27,14 @@ enum Role {
   @@map("role")
 }
 
+enum PlaceSource {
+  FOURSQUARE
+  NOMINATIM
+  MANUAL
+
+  @@map("place_source")
+}
+
 model User {
   id            BigInt         @id @default(autoincrement()) @map("user_id")
   publicId      String         @unique @map("public_id")
@@ -65,7 +73,6 @@ model Itinerary {
   dailyQuota         Int            @default(0) @map("daily_quota")
   status             ProgressStatus @default(PLANNED)
   totalEstimateCents Int            @default(0) @map("total_estimate_cents")
-  placeApiRef        String         @map("place_api_ref")
   notes              String?
   createdAt          DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
   trip               Trip           @relation(fields: [tripId], references: [id], onDelete: Cascade)
@@ -87,10 +94,35 @@ model Visitation {
   createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
   itinerary       Itinerary @relation(fields: [itineraryId], references: [id], onDelete: Cascade)
   itineraryId     BigInt    @map("itinerary_id")
+  place           Place?    @relation(fields: [placeId], references: [id], onDelete: SetNull)
+  placeId         BigInt?   @map("place_id")
 
   @@unique([itineraryId, scheduleTime])
   @@unique([itineraryId, visitOrder])
   @@map("visitations")
+}
+
+model Place {
+  id            BigInt       @id @default(autoincrement()) @map("place_id")
+  publicId      String       @unique @map("public_id")
+  name          String
+  description   String?
+  category      String?
+  address       String?
+  city          String?
+  country       String?
+  latitude      Float?       @db.DoublePrecision
+  longitude     Float?       @db.DoublePrecision
+  imageUrl      String?      @map("image_url")
+  sourceName    PlaceSource  @default(MANUAL) @map("source_name")
+  sourcePlaceId String?      @map("source_place_id")
+  createdAt     DateTime     @default(now()) @map("created_at") @db.Timestamptz(3)
+  visitations   Visitation[]
+
+  @@unique([sourceName, sourcePlaceId])
+  @@index([city])
+  @@index([name])
+  @@map("places")
 }
 
 model RefreshToken {
